@@ -16,7 +16,7 @@ import org.apache.commons.collections.Predicate;
 public class MyPredicate implements Predicate {
     private String name;
 
-    private Integer age;
+    private Integer age; // Integer 才能等于null，int默认初始值为0
 
     public MyPredicate(String name, Integer age) {
         super();
