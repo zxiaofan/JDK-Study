@@ -12,6 +12,7 @@
  */
 
 package other.lambda;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
@@ -32,6 +33,7 @@ public class Lambda1 {
         // lambda expression
         players.forEach((player) -> System.out.print(player + "; "));
         System.out.println();
+        // List<Object>中参数类型不统一，则Lambda无法获取属性值(无法consumer.getName())
 
         // Using double colon operator in Java 8
         players.forEach(System.out::println);
