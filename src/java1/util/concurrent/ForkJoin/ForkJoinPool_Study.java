@@ -13,13 +13,16 @@ import java.util.concurrent.ForkJoinPool;
 import org.junit.Test;
 
 /**
- * ForkJoin
+ * ForkJoin，工作窃取（work-stealing）算法
  * 
  * 本测试用例通过计算求1到n的和来演示ForkJoin，为了符合实际开发情况，每add一次均增加了休眠时间。
  * 
+ * PS：如果不休眠，【ForkJoin】Time:9ms 【Common】Time:0ms，ForkJoin分而治之多耗费了几毫秒的时间，但这显示不符合实际开发情况，有兴趣的读者可自行尝试。
+ * 
+ * 
  * 【ForkJoin】 result=500500; Time:885ms 【Common】 result=500500; Time:9010ms
  * 
- * 由测试结果可以看出，ForkJoin框架消耗的时间约为单线程的十分之一。
+ * 由测试结果可以看出，ForkJoin框架消耗的时间约为单线程的十分之一，前段时间在公司做的一个实际项目用ForkJoin的效率也是单线程的10倍左右。
  * 
  * 相关资料：http://ifeve.com/talk-concurrency-forkjoin/
  * 
