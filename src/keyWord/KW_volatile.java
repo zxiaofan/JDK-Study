@@ -30,7 +30,9 @@ import org.junit.Test;
  * 
  * 那么该如何实现我们想要的结果呢？synchronized、ReentrantLock、AtomicInteger.
  * 
- * 参考资料http://www.cnblogs.com/dolphin0520/p/3920373.html
+ * 参考资料：http://www.cnblogs.com/dolphin0520/p/3920373.html
+ * 
+ * http://www.cnblogs.com/aigongsi/archive/2012/04/01/2429166.html#!comments【评论很有意思】
  * 
  * @author yunhai
  */
@@ -152,7 +154,7 @@ public class KW_volatile {
                     @Override
                     public void run() {
                         incLock();
-                        countDownLatch.countDown(); // countDownLatch导致结果不理想,将其放在循环体内就OK了。
+                        countDownLatch.countDown(); // countDownLatch结果不理想,将其放在循环体内就OK了。
                     };
                 };
                 service.execute(runable);
