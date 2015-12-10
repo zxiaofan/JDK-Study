@@ -12,7 +12,7 @@ package keyWord;
  * @author yunhai
  */
 // 两个类
-public class Static_Study {// 类名与文件名StaticTest.java一致
+public class KW_static {// 类名与文件名StaticTest.java一致
     public static void main(String args[]) {
         // System.out.println(Test.X);
         // Test.display();
