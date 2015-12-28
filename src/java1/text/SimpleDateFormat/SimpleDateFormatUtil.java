@@ -14,11 +14,13 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
- * 静态的simpleDateFormat实例，避免创建大量对象。
  * 
  * @author yunhai
  */
 public class SimpleDateFormatUtil {
+    /**
+     * 静态的simpleDateFormat实例，避免创建大量对象；但多线程报异常java.lang.NumberFormatException。
+     */
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     public static String format(Date date) {
@@ -30,7 +32,7 @@ public class SimpleDateFormatUtil {
     }
 
     /**
-     * 同步SimpleDateFormat对象以适应多线程.
+     * 同步SimpleDateFormat对象，以用于多线程.
      * 
      * @param date
      * @return

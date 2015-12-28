@@ -18,7 +18,7 @@ import net.sourceforge.groboutils.junit.v1.TestRunnable;
 import org.junit.Test;
 
 /**
- * SimpleDateFormat:是DateFormat的子类，更简单灵活功能更强大。
+ * SimpleDateFormat:是DateFormat的子类，更简单灵活功能更强大。【text包下】
  * 
  * SimpleDateFormat extends DateFormat均【非线程安全】。
  * 
@@ -78,9 +78,9 @@ public class SimpleDateFormat_Study {
     public void threadTest() throws Throwable {
         TestRunnable[] testRunnables = new TestRunnable[NUM_THREAD];
         for (int i = 0; i < testRunnables.length; i++) {
-            // testRunnables[i] = new ThreadSimple(); //报异常
-            // testRunnables[i] = new ThreadSync();
-            testRunnables[i] = new ThreadLocal();
+            // testRunnables[i] = new ThreadSimple(); // 报异常java.lang.NumberFormatException
+            testRunnables[i] = new ThreadSync();
+            // testRunnables[i] = new ThreadLocal();
         }
         final MultiThreadedTestRunner multiThreadedTestRunner = new MultiThreadedTestRunner(testRunnables);
         multiThreadedTestRunner.runTestRunnables();
