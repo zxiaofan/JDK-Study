@@ -39,6 +39,7 @@ public class Predicate_Study {
         books.removeIf(book -> book.length() < 5); // remove了"test"
         System.out.println(books);
         System.out.println(calAll(books, book -> ((String) book).contains("Java"))); // 2
+        System.out.println(books.stream().filter(book -> book.contains("Java")).count()); // 2
     }
 
     @Test
