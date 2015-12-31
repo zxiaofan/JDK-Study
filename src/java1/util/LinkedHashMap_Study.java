@@ -35,6 +35,8 @@ public class LinkedHashMap_Study {
      * 
      * 显式地指定为access order后【这是前提】，调用get()方法，导致对应的entry移动到双向链表的最后位置，但是table的顺序没变。
      * 
+     * 【So LinkedHashMap元素有序存放，但并不保证其迭代顺序一直不变】
+     * 
      * 利用ArrayList的【ListIterator】可实现向前遍历
      */
     @Test
@@ -79,9 +81,9 @@ public class LinkedHashMap_Study {
      * 
      * 数据量亿级：LinkedHashMap总体性能好于hashMap。
      * 
-     * 数据量亿级测试时，请勿同时测试两个Map，否则会内存溢出。
+     * 【数据量亿级测试时，请勿同时测试两个Map，否则会内存溢出。】
      */
-    final int sub = 61;
+    final int sub = 31;
 
     final int num = 100_000_000;
 
