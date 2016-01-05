@@ -23,6 +23,8 @@ import org.junit.Test;
  * 
  * 若程序显示指定泛型构造器中实际形参则不可以用“菱形”语法。
  * 
+ * Java不支持泛型数组。应通过instanceof关键字保证数据类型。
+ * 
  * // 实现将一个Object数组元素复制到Collection集合的方法。
  * 
  * @author yunhai
