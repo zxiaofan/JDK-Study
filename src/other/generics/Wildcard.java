@@ -26,7 +26,11 @@ import org.junit.Test;
  * 
  * 被限制的类型通配符：List<? extends Shape>，表示所有Shape泛型List的父类。
  * 
- * 限制类型形参：public class Apple<T extends Number>{}
+ * 限制类型形参：
+ * 
+ * 类型通配符上限:public class Apple<T extends Number>{}
+ * 
+ * 类型通配符下限:public class Apple<T super Type>{}，表示必须是Type本身或他的父类。
  * 
  * 表示Apple泛型类的类型形参上限是Number类，即使用Apple类时T形参传入的实际参数只能是Number类或Number类的子类。Apple<String> apple=new Apple<>()将引起编译错误。
  * 
