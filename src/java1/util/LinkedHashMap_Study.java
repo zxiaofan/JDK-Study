@@ -39,6 +39,7 @@ public class LinkedHashMap_Study {
      * 
      * 利用ArrayList的【ListIterator】可实现向前遍历
      */
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Test
     public void simpleTest() {
         LinkedHashMap map = new LinkedHashMap(16, (float) 0.75, true);
@@ -58,7 +59,7 @@ public class LinkedHashMap_Study {
             Map.Entry entry = iterpre.previous();
             System.out.print(entry.toString() + "; "); // 9=C; 33=C; 5=B; 6=A;
         }
-        System.out.println();
+        System.out.println("显式指定access order模式");
         map.get("5"); // 显式地指定为get读取模式后，调用get()方法，导致对应的entry移动到双向链表的最后位置，但是table的顺序没变。
         // Iterator<Map.Entry> iterget = map.entrySet().iterator();
         // while (iterget.hasNext()) {
@@ -66,6 +67,19 @@ public class LinkedHashMap_Study {
         // System.out.println(entry.toString() + "; ");
         // }
         map.forEach((key, value) -> System.out.print(key + "->" + value + "; ")); // 6->A; 33->C; 9->C; 5->B;
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    @Test
+    public void init() {
+        Map map = new HashMap();
+        map.put("a", 1);
+        map.put("b", 2);
+        LinkedHashMap lMap = new LinkedHashMap(map); // 用HashMap初始化LinkedHashMap。
+        System.out.println(lMap);
+        lMap.remove("a");
+        lMap.put("a", 1);
+        // remove后再put，集合结构变化：只要未冲突，table不改变（想想put原理就好理解了）；但链表改变，新元素始终在tail。
     }
 
     /**
