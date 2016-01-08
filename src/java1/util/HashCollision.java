@@ -8,13 +8,14 @@
  */
 package java1.util;
 
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.junit.Test;
 
 /**
- * Hash碰撞实例.
+ * Hash碰撞实例,HashMap和ConcurrentHashMap碰撞条件及链表转树的临界点是一样的.
  * 
  * @author yunhai
  */
@@ -23,8 +24,13 @@ public class HashCollision {
     private int MIN_TREEIFY_CAPACITY = 63;
 
     @Test
-    public void hashCollision() {
-        HashMap<Country, String> map = new HashMap<Country, String>();
+    public void test() {
+        // HashMap<Country, String> map = new HashMap<Country, String>();
+        ConcurrentHashMap<Country, String> map = new ConcurrentHashMap<HashCollision.Country, String>();
+        hashCollision(map);
+    }
+
+    private void hashCollision(Map<Country, String> map) {
         for (int i = 0; i < MIN_TREEIFY_CAPACITY; i++) {
             map.put(new Country(i, 1000 + i), "value" + i);
         }
