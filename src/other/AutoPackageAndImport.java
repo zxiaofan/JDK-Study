@@ -53,7 +53,7 @@ public class AutoPackageAndImport {
     @Test
     public void testAutoPackageAndImport() {
         System.out.println(noteMsg);
-        System.out.println("请输入要add package的文件的绝对路径：");
+        System.out.println("请输入待修改的文件（夹）的绝对路径：");
         Scanner scanner = new Scanner(System.in);
         String path = scanner.nextLine();
         String relativeSrc = "";
