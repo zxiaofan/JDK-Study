@@ -23,11 +23,19 @@ public class HashCollision {
 
     private int MIN_TREEIFY_CAPACITY = 63;
 
+    boolean bool = true; // true表示：baseCount=191时调试源码，观测扩容时，链表的具体变化。
+
     @Test
     public void test() {
         // HashMap<Country, String> map = new HashMap<Country, String>();
         ConcurrentHashMap<Country, String> map = new ConcurrentHashMap<HashCollision.Country, String>();
         hashCollision(map);
+        System.out.println("--------即将树转链表--------");
+        for (int i = 0; i < 6; i++) {
+            map.remove(i * MIN_TREEIFY_CAPACITY);
+        }
+        System.out.println("--------查看table，发现   树转链表  失败  --------");
+        System.out.println("--------HashMap、ConcurrentHashMap树转链表（树节点小于等于6），只会发生在扩容时！！！  --------");
     }
 
     private void hashCollision(Map<Country, String> map) {
@@ -41,7 +49,15 @@ public class HashCollision {
         System.out.println("------0桶位，即将到达链表转树临界点------");
         for (int i = MIN_TREEIFY_CAPACITY * 2; i < MIN_TREEIFY_CAPACITY * 8;) {
             map.put(new Country(i, 1000 + i), "value" + i);
-            i += MIN_TREEIFY_CAPACITY;
+            if (bool) {
+                i += 1;
+                if (i == 190 || i == 191) {
+                    print(map);
+                }
+            } else {
+                i += MIN_TREEIFY_CAPACITY;
+            }
+
         }
         System.out.println(map.entrySet().size()); // 134=128+6,桶0有8个元素依旧没转树
         System.out.println("------0桶位，即将达到9个元素，链表转树------");
@@ -49,12 +65,18 @@ public class HashCollision {
             map.put(new Country(i, 1000 + i), "value" + i);
             i += 64;
         }
+        // print(map);
+
+    }
+
+    private void print(Map<Country, String> map) {
         Iterator<Country> iter = map.keySet().iterator();// put debug point at this line
         while (iter.hasNext()) {
             Country countryObj = iter.next();
             String capital = map.get(countryObj);
-            System.out.println(countryObj.getName() + "----" + capital);
+            System.out.println(countryObj.getName() + ";");
         }
+        System.out.println("============");
     }
 
     /**
