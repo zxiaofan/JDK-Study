@@ -8,35 +8,40 @@
  */
 package java1.util;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.Properties;
 
 import org.junit.Test;
 
 /**
- * Properties extends Hashtable
+ * pros extends Hashtable
  * 
  * @author yunhai
  */
 public class Properties_Study {
+    String path = "D:\\pros.ini";
+
     @Test
     public void readAndWrite() throws FileNotFoundException, IOException {
         Properties pros = new Properties();
         pros.put("name", "Jack"); // put插入元素
         pros.put("pwd", "pwd123");
-        pros.store(new FileOutputStream("D:\\pros.ini"), "MyProperties-Test"); // 写入
+        pros.store(new FileOutputStream(path), "MyProperties-Test"); // 写入
 
         Properties pros2 = new Properties();
         pros2.setProperty("grade", "99"); // setProperty插入元素
-        pros2.store(new FileOutputStream("D:\\pros.ini", true), "add-Test"); // 追加
+        pros2.store(new FileOutputStream(path, true), "add-Test"); // 追加
 
         Properties pros3 = new Properties();
         pros3.put("read", "read-yes");
-        pros3.load(new FileInputStream("D:\\pros.ini")); // 从Properties读取key-value对，并添加到pros3;读取时自动忽略其中的注释
+        pros3.load(new FileInputStream(path)); // 从Properties读取key-value对，并添加到pros3;读取时自动忽略其中的注释
         System.out.println(pros3);
         pros3.store(new FileOutputStream("D:\\pros3.ini"), "load key-value,reWrite .ini"); // 将新数据重新写入ini
         System.out.println(pros3.get("name")); // get方法
@@ -54,7 +59,7 @@ public class Properties_Study {
      */
     @Test
     public void clear() {
-        String s = "D:\\pros.ini";// 文件的绝对路径
+        String s = path;// 文件的绝对路径
         File file = new File(s);
         if (file.exists()) {
             boolean d = file.delete();
@@ -67,9 +72,25 @@ public class Properties_Study {
         // pros.put("read", "read-yes");
         try {
             pros.clear();
-            pros.store(new FileOutputStream("D:\\pros.ini", true), ""); // 追加
+            pros.store(new FileOutputStream(path, true), ""); // 追加
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Properties支持写入后直接显示中文
+    @Test
+    public void writePropertiesChinese() {
+        Properties pros = new Properties();
+        try {
+            OutputStream outputStream = new FileOutputStream(path);
+            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(outputStream, "utf-8"));
+            pros.setProperty("username" + Math.random(), "myname");
+            pros.setProperty("chinese" + Math.random(), "中文");
+            pros.store(bw, null);
+            outputStream.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
