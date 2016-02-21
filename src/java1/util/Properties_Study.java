@@ -59,7 +59,6 @@ public class Properties_Study {
         if (file.exists()) {
             boolean d = file.delete();
             if (d) {
-                System.out.print("删除成功！");
             } else {
                 System.out.print("删除失败！");
             }
