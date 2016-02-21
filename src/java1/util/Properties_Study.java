@@ -16,6 +16,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
 
 import org.junit.Test;
@@ -93,6 +95,26 @@ public class Properties_Study {
             outputStream.close();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * 遍历Properties，Properties继承于HashTable.
+     * 
+     * @throws IOException
+     * @throws FileNotFoundException
+     * 
+     */
+    @Test
+    public void IteratorProperties() throws Exception {
+        Properties pros = new Properties();
+        pros.load(new FileInputStream(path));
+        Iterator it = pros.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry entry = (Map.Entry) it.next();
+            Object key = entry.getKey();
+            Object value = entry.getValue();
+            System.out.println(key + ":" + value);
         }
     }
 }
