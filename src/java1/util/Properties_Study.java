@@ -8,6 +8,7 @@
  */
 package java1.util;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -40,5 +41,38 @@ public class Properties_Study {
         pros3.store(new FileOutputStream("D:\\pros3.ini"), "load key-value,reWrite .ini"); // 将新数据重新写入ini
         System.out.println(pros3.get("name")); // get方法
         pros3.storeToXML(new FileOutputStream("D:\\pros.xml"), "store to xml", "UTF-8"); // storeToXML
+    }
+
+    /**
+     * 清空properties文件
+     * 
+     * clear无效，原因未知，只有暂时删除文件再new一个
+     * 
+     * @throws IOException
+     * @throws FileNotFoundException
+     *
+     */
+    @Test
+    public void clear() {
+        String s = "D:\\pros.ini";// 文件的绝对路径
+        File file = new File(s);
+        if (file.exists()) {
+            boolean d = file.delete();
+            if (d) {
+                System.out.print("删除成功！");
+            } else {
+                System.out.print("删除失败！");
+            }
+        }
+        Properties pros = new Properties();
+        // pros.put("read", "read-yes");
+        try {
+            pros.clear();
+            pros.store(new FileOutputStream("D:\\pros.ini", true), ""); // 追加
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
