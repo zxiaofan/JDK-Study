@@ -38,7 +38,7 @@ public class TreeSet_Study {
         set.add("d");
         set.add("e");
         set.add("e"); // 无重复值
-        // set.add(null); // 不允许值为null
+        // set.add(null); // 不允许值为null,NullPointerException
     }
 
     /**
