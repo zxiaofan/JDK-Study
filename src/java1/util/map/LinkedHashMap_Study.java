@@ -6,7 +6,7 @@
  * 修改时间：2015年12月30日
  * 修改内容：新增
  */
-package java1.util;
+package java1.util.map;
 
 import java.util.ArrayList;
 import java.util.HashMap;
