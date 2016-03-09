@@ -75,6 +75,7 @@ public class EnumSet_Study {
     @Test
     public void testRegularEnumSet() {
         EnumSet set = EnumSet.noneOf(num.class); // 创建空集合
+        // set = set.range(num.a0, num.a69); // elements只有0、1位有值。
         set.add(num.a0); // a0.ordinal=0,eWordNum=0;使ele[0]=1;
         set.add(num.a1); // a1.ordinal=1,eWordNum=0；1L << eOrdinal=2;elements[eWordNum] |= (1L << eOrdinal) 即第0个元素与2或等于，使elements[0]=11(B);
         set.add(num.a50);
@@ -86,4 +87,10 @@ public class EnumSet_Study {
         // 引申[64*j +i]，elements[j]的第i个元素为1。
         System.out.println(set.contains(num.a65)); // 65>>>6=1; 1<<65=2; ele[1]&2=35&2=2
     }
+    // 例--contains：
+    // "eOrdinal" 65
+    // "1L << eOrdinal" 2
+    // "eOrdinal >>> 6" 1 // 待查元素的高位
+    // "elements[eOrdinal >>> 6]" 35 // elements第j号位所有元素
+    // "elements[eOrdinal >>> 6] & (1L << eOrdinal)" 2
 }
