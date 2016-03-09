@@ -110,11 +110,12 @@ public class HashMap_Study {
         map.put(6, "s");
         map.forEach((key, value) -> System.out.println(key + "=" + value));// 自带lambda遍历
         // map.forEach((key) -> System.out.println(key)); //报错，参数必须同时包含key和value
+
+        // 迭代时成功remove存在的元素，如1,才会ConcurrentModificationException.
         /*
-         * // 迭代时remove,ConcurrentModificationException.
-         * 
-         * map.forEach((key, value) -> { System.out.println(key + "==" + value); map.remove("2"); });
+         * map.forEach((key, value) -> { System.out.println(key + "==" + value); map.remove(1); });
          */
+
         System.out.println("======1.7遍历方式entrySet/keySet/values,1.8保留======");
         for (Entry<Object, Object> entry : map.entrySet()) {
             System.out.println(entry.getKey());
