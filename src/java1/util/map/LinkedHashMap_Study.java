@@ -43,6 +43,8 @@ public class LinkedHashMap_Study {
     @Test
     public void simpleTest() {
         LinkedHashMap map = new LinkedHashMap(16, (float) 0.75, true);
+        map.put(null, 1);
+        map.put(null, null); // 允许key、value为null，但key仅能有1个null
         map.put("6", "A");
         map.put("5", "B");
         map.put("33", "C");
