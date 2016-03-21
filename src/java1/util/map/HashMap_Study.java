@@ -136,6 +136,27 @@ public class HashMap_Study {
         }
     }
 
+    /**
+     * HashMap的正确迭代方式.
+     * 
+     */
+    @Test
+    public void CorrectIterator() {
+        HashMap<Integer, Integer> map = new HashMap<>();
+        map.put(1, 2);
+        map.put(3, 4);
+        Iterator<Entry<Integer, Integer>> it = map.entrySet().iterator();
+        while (it.hasNext()) {
+            Entry<Integer, Integer> entry = it.next();
+            Integer key = (Integer) entry.getKey();
+            if (key % 2 == 0) {
+                System.out.println("Delete key：" + key);
+                it.remove(); // 从集合中删除上一次next返回的元素
+                System.out.println("The key " + +key + " was deleted");
+            }
+        }
+    }
+
     @Test
     public void RemoveConcurrentModificationException() {
         HashMap<Integer, Integer> map = new HashMap<>();

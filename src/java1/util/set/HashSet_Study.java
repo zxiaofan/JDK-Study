@@ -15,7 +15,7 @@ import org.junit.Test;
 /**
  * HashSet Study
  * 
- * 底层是HashMap
+ * 底层是HashMap,扩容等存储结构都同HashMap。
  * 
  * HashMap中的Key是根据对象的hashCode() 和 euqals()来判断是否唯一的。
  * 

@@ -30,6 +30,20 @@ public class TreeSet_Study {
         System.out.println(set); // [a, b, c, d, e, f]
     }
 
+    /**
+     * 树结构，无扩容一说.
+     * 
+     * 由构造函数可知：底层为TreeMap。public TreeSet() { this(new TreeMap<E,Object>()); }
+     */
+    @Test
+    public void testResize() {
+        Set<Integer> set = new TreeSet<>();
+        for (int i = 0; i < 100; i++) {
+            set.add(i);
+        }
+        System.out.println(set);
+    }
+
     private void initSet(Set<String> set) {
         set.add("f"); // 底层结构为NavigableMap，一种SortedMap
         set.add("a");
