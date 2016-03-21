@@ -38,4 +38,19 @@ public class StringConstantPool {
         d = d.intern(); // 需要再次赋值给d，因为intern返回的是常量池的值或者一个引用
         System.out.println(a == d); // true
     }
+
+    @Test
+    public void final_String() {
+        String a = "张三";
+        final String b = "张"; // 只有在编译期间能确切知道final变量值的情况下,才会将b当成编译器常量
+        String d = b + "三";
+        System.out.println(a == d); // true
+        String c = getC();
+        String e = c + "三";
+        System.out.println(a == e); // false，编译时不确定变量的值
+    }
+
+    private String getC() {
+        return "张";
+    }
 }
