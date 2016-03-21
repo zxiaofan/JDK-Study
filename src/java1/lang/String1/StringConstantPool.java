@@ -33,5 +33,9 @@ public class StringConstantPool {
         System.out.println(a == d); // false
         String e = "张" + "三";
         System.out.println(a == e); // true
+        // 强制使用字符串常量池
+        // java.lang.String的intern()方法，"abc".intern()方法的返回值还是字符串"abc".作用：检查字符串池里是否存在"abc"这么一个字符串，如果存在，就返回池里的字符串；如果不存在，该方法会 把"abc"添加到字符串池中，然后再返回它的引用。
+        d = d.intern(); // 需要再次赋值给d，因为intern返回的是常量池的值或者一个引用
+        System.out.println(a == d); // true
     }
 }
