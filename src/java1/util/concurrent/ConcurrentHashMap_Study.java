@@ -22,6 +22,7 @@ public class ConcurrentHashMap_Study {
     @Test
     public void test() {
         ConcurrentHashMap conMap = new ConcurrentHashMap(16, (float) 0.75, 50);
+        conMap.put("1", null); // key、value均不允许null，但可以""
         conMap.put("a", 1);
         conMap.put("b", 1);
         conMap.put("c", 1);
