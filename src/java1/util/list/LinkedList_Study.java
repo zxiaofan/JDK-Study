@@ -38,4 +38,25 @@ public class LinkedList_Study {
             list.remove("a"); // 迭代时remove抛ConcurrentModificationException
         }
     }
+
+    /**
+     * 迭代时remove不抛ConcurrentModificationException特例【实际元素个数<=2】.
+     * 
+     * 和HashMap一样，迭代时remove本身并不会抛异常。
+     * 
+     * 此处异常在于ite.next()方法会执行checkForComodification来检测(modCount != expectedModCount)
+     */
+    @Test
+    public void ConcurrentModificationException() {
+        List list = new LinkedList<>();
+        list.add("a");
+        list.add("b");
+        Iterator ite = list.iterator();
+        while (ite.hasNext()) { // hasNext() {return nextIndex < size;}
+            // 当list只有2个元素，remove第一个后，nextIndex=1=size，hasNext()返回false，也就不会再执行ite.next()，也就不会抛异常了
+            Object object = (Object) ite.next();
+            System.out.println(object);
+            list.remove("b");
+        }
+    }
 }
