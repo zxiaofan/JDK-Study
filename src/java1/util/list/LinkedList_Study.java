@@ -29,6 +29,10 @@ public class LinkedList_Study {
         list.remove(null); // 只remove第一个元素
         list.add(1);
         list.remove((Integer) 1); // remove int本身
+        // list.remove(Integer.valueOf(1)); // remove int本身，入参为包装类Integer
+        int i = 0;
+        // remove指定位置元素，调用E remove(int index)方法，必须直接传入int型的变量
+        list.remove(i);
         list.add("a");
         list.add("b");
         Iterator ite = list.iterator();
