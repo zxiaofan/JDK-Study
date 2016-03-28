@@ -78,7 +78,7 @@ public class TransformBusiness {
     /**
      * package默认加入该路径.
      */
-    private static String packagePath = ".model.vo";
+    private static String packagePath = "model.vo";
 
     /**
      * 输出路径.
@@ -111,18 +111,22 @@ public class TransformBusiness {
         createFile(outputPath);
         for (Entry<String, List<FieldVo>> entry : map.entrySet()) {
             String relativePath = entry.getKey();
-            // if (!"".equals(relativePath)) {
-            // relativePath = relativePath.replaceAll("\\\\", ".");
-            // }
-            relativePath = relativePath.substring(0, relativePath.lastIndexOf("\\"));
+            if (!"".equals(relativePath)) {
+                relativePath = relativePath.substring(0, relativePath.lastIndexOf("\\"));
+            }
             List<FieldVo> fieldVos = entry.getValue();
             if (fieldVos.isEmpty()) {
                 continue;
             }
             StringBuffer buffer = new StringBuffer();
             if (!"".equals(packageName) && packageName != null) {
-                buffer.append("package " + packageName + packagePath + relativePath.replaceAll("\\\\", ".") + ";" + rn + rn);
+                packageName += ".";
             }
+            String relativePathPackage = relativePath.replaceAll("\\\\", ".");
+            // if (relativePathPackage.contains(".")) {
+            // relativePathPackage = relativePathPackage.substring(relativePathPackage.lastIndexOf("."));
+            // }
+            buffer.append("package " + packageName + packagePath + relativePathPackage + ";" + rn + rn);
             buffer.append(importBigDecimal);
             buffer.append(importDate);
             buffer.append(importList);
@@ -219,7 +223,7 @@ public class TransformBusiness {
                 continue;
             }
             fileTxt = fileTxt.substring(fileTxt.indexOf("namespace"));
-
+            fileTxt = fileTxt.replaceAll("#region public members", "");
             // Start 多匹配模式
             StringBuffer pattern = new StringBuffer();
             pattern.append("<summary>.*?(?<desc>.*?)?</summary>");
@@ -231,7 +235,7 @@ public class TransformBusiness {
                 fieldDesc = matcher.group("desc").replaceAll("/", "").trim();
                 type = matcher.group("type").trim();
                 fieldNameUpper = matcher.group("fieldname").trim();
-                if (!"class".equals(type) && !fieldNameUpper.endsWith("()") && !"".equals(fieldNameUpper)) {
+                if (!"class".equals(type) && !fieldNameUpper.endsWith(")") && !"".equals(fieldNameUpper)) {
                     vo.setClassName(fileClassname);
                     vo.setFieldNameUpper(fieldNameUpper);
                     type = typeTrans(type);
@@ -270,6 +274,9 @@ public class TransformBusiness {
             type = type.replaceAll("decimal", "BigDecimal");
         } else if (type.contains("object")) {
             type = type.replaceAll("object", "Object");
+        }
+        if ("enum".equals(type)) {
+            type = "int";
         }
         if (type.contains("<int>")) {
             type = type.replaceAll("<int>", "<Integer>");
