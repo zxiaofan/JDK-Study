@@ -25,6 +25,9 @@ import org.junit.Test;
  * @author yunhai
  */
 public class StartTransform {
+    /**
+     * 转换实现类.
+     */
     TransformBusiness trans = new TransformBusiness();
 
     @Test

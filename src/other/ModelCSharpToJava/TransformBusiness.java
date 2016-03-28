@@ -155,6 +155,7 @@ public class TransformBusiness {
                 buffer.append(tab + tab + "this." + vo.getFieldNameLower() + " = " + vo.getFieldNameLower() + ";" + rn + tab + "}" + rn);
             }
             buffer.append("}" + rn);
+            relativePath = relativePath.replaceAll("\\.", "\\\\");
             String finalPath = outputPath + "\\" + relativePath; // + fieldVos.get(0).getClassName() + ".java";
             if (!"".equals(relativePath)) {
                 createFile(finalPath);
@@ -189,6 +190,8 @@ public class TransformBusiness {
                     e.printStackTrace();
                 }
             } else {
+                // 递归创建文件夹，保证该路径所有文件夹都被创建
+                createFile(path.substring(0, path.lastIndexOf("\\")));
                 file.mkdir();
             }
         }
@@ -254,13 +257,15 @@ public class TransformBusiness {
      * @return Java类型
      */
     private String typeTrans(String type) {
+        if (type.contains("?")) {
+            type = type.replaceAll("\\?", "");
+        }
         if (type.contains("string")) {
             type = type.replaceAll("string", "String");
         } else if (type.contains("DateTime")) {
             type = type.replaceAll("DateTime", "Date");
         } else if (type.contains("bool")) {
             type = type.replaceAll("bool", "boolean");
-            type = type.replaceAll("?", "");
         } else if (type.contains("decimal")) {
             type = type.replaceAll("decimal", "BigDecimal");
         } else if (type.contains("object")) {
