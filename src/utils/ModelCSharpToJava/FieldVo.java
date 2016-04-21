@@ -6,7 +6,7 @@
  * 修改时间：2016年3月28日
  * 修改内容：新增
  */
-package other.ModelCSharpToJava;
+package utils.ModelCSharpToJava;
 
 /**
  * 字段信息

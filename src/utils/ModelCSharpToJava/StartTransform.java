@@ -1,4 +1,4 @@
-package other.ModelCSharpToJava;
+package utils.ModelCSharpToJava;
 
 import java.util.Scanner;
 
