@@ -1,12 +1,12 @@
 /*
- * 文件名：TransformBusiness.java
+ * 文件名：CSharpToJavaModelUtils.java
  * 版权：Copyright 2007-2016 517na Tech. Co. Ltd. All Rights Reserved. 
- * 描述： TransformBusiness.java
+ * 描述： CSharpToJavaModelUtils.java
  * 修改人：yunhai
  * 修改时间：2016年3月28日
  * 修改内容：新增
  */
-package utils.ModelCSharpToJava;
+package utils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -19,18 +19,53 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
+ * 本工具源于最近项目需要将C#的model转为Java，且公司有CheckStyle，
+ * 
+ * 考虑到copy、paste效率太低，且对技术没有任何提升；
+ * 
+ * 以后接手的C#项目会越来越多，写个工具实现一键转换的必要性也就相当高了。
+ * 
+ * 支持标准格式的C# model
  * 
  * @author yunhai
  */
-public class TransformBusiness {
+public class CSharpToJavaModelUtils {
+
+    /**
+     * 开始转换.
+     * 
+     */
+    public static void start() {
+        System.out.println("请输入待转换的C#文件（夹）的绝对路径：");
+        Scanner scanner = new Scanner(System.in);
+        String path = scanner.nextLine();
+        System.out.println("请输入生成Java文件的包名：");
+        String packageName = scanner.nextLine();
+        transform(path, packageName);
+        System.out.println("转换完成，请到" + outputPath + "查看转换结果！");
+        try {
+            String[] cmd = new String[5];
+            cmd[0] = "cmd";
+            cmd[1] = "/c";
+            cmd[2] = "start";
+            cmd[3] = " ";
+            cmd[4] = outputPath;
+            Runtime.getRuntime().exec(cmd);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     /**
      * 所有待转换文件绝对路径.
      */
-    List<String> filePaths = new ArrayList<>();
+    static List<String> filePaths = new ArrayList<>();
 
     private static String encode = "utf-8";
 
@@ -63,7 +98,7 @@ public class TransformBusiness {
     /**
      * Map<相对路径，字段信息集合>.
      */
-    private Map<String, List<FieldVo>> mapData = new HashMap();
+    private static Map<String, List<FieldVo>> mapData = new HashMap();
 
     /**
      * 待转换的目录.
@@ -93,7 +128,7 @@ public class TransformBusiness {
      * @param packageName1
      *            包名.
      */
-    public void transform(String path, String packageName1) {
+    private static void transform(String path, String packageName1) {
         originPath = path;
         packageName = packageName1;
         getAllFilePath(path);
@@ -106,7 +141,7 @@ public class TransformBusiness {
      * 
      * @param map
      */
-    private void createJavaModel(Map<String, List<FieldVo>> map) {
+    private static void createJavaModel(Map<String, List<FieldVo>> map) {
         createFile("d:\\model");
         createFile(outputPath);
         for (Entry<String, List<FieldVo>> entry : map.entrySet()) {
@@ -184,7 +219,7 @@ public class TransformBusiness {
      * @param path
      *            路径
      */
-    private void createFile(String path) {
+    private static void createFile(String path) {
         File file = new File(path);
         if (!file.exists()) {
             if (path.contains(".")) {
@@ -207,7 +242,7 @@ public class TransformBusiness {
      * @param Paths
      *            所有待转换文件绝对路径.
      */
-    private void buildOriginData(List<String> Paths) {
+    private static void buildOriginData(List<String> Paths) {
         String fileTxt = ""; // 文本内容
         String fileClassname = ""; // 类名
         String fieldDesc = ""; // 字段描述
@@ -220,6 +255,7 @@ public class TransformBusiness {
             fileClassname = absolutePath.substring(absolutePath.lastIndexOf("\\") + 1, absolutePath.lastIndexOf("."));
             fileTxt = readTextFile(absolutePath, encode);
             if (!fileTxt.contains("namespace")) {
+                System.err.println("该CS文件不是model:" + absolutePath);
                 continue;
             }
             fileTxt = fileTxt.substring(fileTxt.indexOf("namespace"));
@@ -260,7 +296,7 @@ public class TransformBusiness {
      *            字段类型
      * @return Java类型
      */
-    private String typeTrans(String type) {
+    private static String typeTrans(String type) {
         if (type.contains("?")) {
             type = type.replaceAll("\\?", "");
         }
@@ -290,7 +326,7 @@ public class TransformBusiness {
      * @param fieldNameUpper
      * @return
      */
-    private String upperConvertToLower(String fieldNameUpper) {
+    private static String upperConvertToLower(String fieldNameUpper) {
         if ("".equals(fieldNameUpper)) {
             return "";
         }
@@ -304,7 +340,7 @@ public class TransformBusiness {
      * @param path
      * @return
      */
-    private void getAllFilePath(String path) {
+    private static void getAllFilePath(String path) {
         File root = new File(path);
         File[] files = root.listFiles();
         if (files == null) {
@@ -326,7 +362,7 @@ public class TransformBusiness {
 
     }
 
-    public static String readTextFile(String sFileName, String sEncode) {
+    private static String readTextFile(String sFileName, String sEncode) {
         StringBuffer sbStr = new StringBuffer();
         try {
             File ff = new File(sFileName);
@@ -351,7 +387,7 @@ public class TransformBusiness {
      *            str
      * @return str
      */
-    public String formatStr(String str) {
+    private String formatStr(String str) {
         if (str != null) {
             Pattern p = Pattern.compile("\\s*|\t|\r|\n");
             Matcher m = p.matcher(str);
@@ -359,4 +395,204 @@ public class TransformBusiness {
         }
         return str;
     }
+}
+
+/**
+ * 字段信息
+ * 
+ * @author yunhai
+ */
+class FieldVo {
+    /**
+     * 类名.
+     */
+    public String className;
+
+    /**
+     * 字段类型.
+     */
+    public String type;
+
+    /**
+     * 字段名-小写.
+     */
+    public String fieldNameLower;
+
+    /**
+     * 字段名-大写.
+     */
+    public String fieldNameUpper;
+
+    /**
+     * get.
+     */
+    public String getters;
+
+    /**
+     * set.
+     */
+    public String setters;
+
+    /**
+     * 类的相对路径.
+     */
+    public String relativePath;
+
+    /**
+     * 字段描述.
+     */
+    public String fieldDesc;
+
+    /**
+     * 设置className.
+     * 
+     * @return 返回className
+     */
+    public String getClassName() {
+        return className;
+    }
+
+    /**
+     * 获取className.
+     * 
+     * @param className
+     *            要设置的className
+     */
+    public void setClassName(String className) {
+        this.className = className;
+    }
+
+    /**
+     * 设置type.
+     * 
+     * @return 返回type
+     */
+    public String getType() {
+        return type;
+    }
+
+    /**
+     * 获取type.
+     * 
+     * @param type
+     *            要设置的type
+     */
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    /**
+     * 设置fieldNameLower.
+     * 
+     * @return 返回fieldNameLower
+     */
+    public String getFieldNameLower() {
+        return fieldNameLower;
+    }
+
+    /**
+     * 获取fieldNameLower.
+     * 
+     * @param fieldNameLower
+     *            要设置的fieldNameLower
+     */
+    public void setFieldNameLower(String fieldNameLower) {
+        this.fieldNameLower = fieldNameLower;
+    }
+
+    /**
+     * 设置fieldNameUpper.
+     * 
+     * @return 返回fieldNameUpper
+     */
+    public String getFieldNameUpper() {
+        return fieldNameUpper;
+    }
+
+    /**
+     * 获取fieldNameUpper.
+     * 
+     * @param fieldNameUpper
+     *            要设置的fieldNameUpper
+     */
+    public void setFieldNameUpper(String fieldNameUpper) {
+        this.fieldNameUpper = fieldNameUpper;
+    }
+
+    /**
+     * 设置getters.
+     * 
+     * @return 返回getters
+     */
+    public String getGetters() {
+        return getters;
+    }
+
+    /**
+     * 获取getters.
+     * 
+     * @param getters
+     *            要设置的getters
+     */
+    public void setGetters(String getters) {
+        this.getters = getters;
+    }
+
+    /**
+     * 设置setters.
+     * 
+     * @return 返回setters
+     */
+    public String getSetters() {
+        return setters;
+    }
+
+    /**
+     * 获取setters.
+     * 
+     * @param setters
+     *            要设置的setters
+     */
+    public void setSetters(String setters) {
+        this.setters = setters;
+    }
+
+    /**
+     * 设置relativePath.
+     * 
+     * @return 返回relativePath
+     */
+    public String getRelativePath() {
+        return relativePath;
+    }
+
+    /**
+     * 获取relativePath.
+     * 
+     * @param relativePath
+     *            要设置的relativePath
+     */
+    public void setRelativePath(String relativePath) {
+        this.relativePath = relativePath;
+    }
+
+    /**
+     * 设置fieldDesc.
+     * 
+     * @return 返回fieldDesc
+     */
+    public String getFieldDesc() {
+        return fieldDesc;
+    }
+
+    /**
+     * 获取fieldDesc.
+     * 
+     * @param fieldDesc
+     *            要设置的fieldDesc
+     */
+    public void setFieldDesc(String fieldDesc) {
+        this.fieldDesc = fieldDesc;
+    }
+
 }
