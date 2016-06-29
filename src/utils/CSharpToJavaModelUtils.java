@@ -32,6 +32,8 @@ import java.util.regex.Pattern;
  * 
  * 支持标准格式的C# model
  * 
+ * 持续更新地址：https://github.com/zxiaofan/JDK-Study/tree/master/src/utils
+ * 
  * @author yunhai
  */
 public class CSharpToJavaModelUtils {
