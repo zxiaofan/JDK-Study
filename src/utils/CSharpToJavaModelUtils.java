@@ -35,6 +35,9 @@ import java.util.regex.Pattern;
  * @author yunhai
  */
 public class CSharpToJavaModelUtils {
+    public static void main(String[] args) {
+        CSharpToJavaModelUtils.start();
+    }
 
     /**
      * 开始转换.
@@ -118,7 +121,7 @@ public class CSharpToJavaModelUtils {
     /**
      * 输出路径.
      */
-    private static String outputPath = "d:\\model\\vo";
+    private static String outputPath = "d:\\model\\";
 
     /**
      * 执行转换.
@@ -130,6 +133,7 @@ public class CSharpToJavaModelUtils {
      */
     private static void transform(String path, String packageName1) {
         originPath = path;
+        outputPath = outputPath + packageName1.replaceAll("\\.", "\\\\") + "\\model\\vo";
         packageName = packageName1;
         getAllFilePath(path);
         buildOriginData(filePaths);
@@ -142,7 +146,6 @@ public class CSharpToJavaModelUtils {
      * @param map
      */
     private static void createJavaModel(Map<String, List<FieldVo>> map) {
-        createFile("d:\\model");
         createFile(outputPath);
         for (Entry<String, List<FieldVo>> entry : map.entrySet()) {
             String relativePath = entry.getKey();
@@ -154,7 +157,7 @@ public class CSharpToJavaModelUtils {
                 continue;
             }
             StringBuffer buffer = new StringBuffer();
-            if (!"".equals(packageName) && packageName != null) {
+            if (!"".equals(packageName) && packageName != null && !packageName.endsWith(".")) {
                 packageName += ".";
             }
             String relativePathPackage = relativePath.replaceAll("\\\\", ".");
@@ -173,7 +176,7 @@ public class CSharpToJavaModelUtils {
                 buffer.append(desc1);
                 buffer.append(vo.getFieldDesc());
                 buffer.append(desc2);
-                buffer.append("public " + vo.getType() + " " + vo.getFieldNameLower() + ";" + rn);
+                buffer.append("private " + vo.getType() + " " + vo.getFieldNameLower() + ";" + rn);
             }
             // 字段get、set
             for (FieldVo vo : fieldVos) {
@@ -182,7 +185,7 @@ public class CSharpToJavaModelUtils {
                 buffer.append("获取" + vo.getFieldDesc() + "." + rn + tab + " *" + rn);
                 buffer.append("     * @return 返回" + vo.getFieldDesc());
                 buffer.append(desc2);
-                buffer.append("public " + vo.getType() + " get" + vo.getFieldNameLower() + "() {" + rn);
+                buffer.append("public " + vo.getType() + " get" + vo.getFieldNameUpper() + "() {" + rn);
                 buffer.append(tab + tab + "return " + vo.getFieldNameLower() + ";" + rn + tab + "}" + rn);
                 // set
                 buffer.append(desc1);
