@@ -46,10 +46,7 @@ public class DataExtractUtil {
     private static String timeEnd = "20160630";
 
     // sql中的所有表名请用dynamicTableName代替
-    // private static String sql = "SELECT A1,A2 FROM dynamicTableName WHERE A8 LIKE '%供应资源换编码失败%有外放舱位%' AND A1 in (SELECT DISTINCT A1 FROM dynamicTableName WHERE A8 like '%新供应商：内部采购%' AND A1
-    // in(SELECT A1 FROM dynamicTableName WHERE A8 like '%同定同出外放无舱位%' OR A8 LIKE '%订单没有换编码—zd%' OR A8 LIKE '%换编码外放无舱位%' OR PNRContent like '%同定同出外放无舱位%' OR PNRContent like '%订单没有换编码—zd%' OR PNRContent
-    // like '%换编码外放无舱位%'));";
-    private static String sql = "SELECT A1,A2 FROM dynamicTableName limit 5";
+    private static String sql = "sql";
 
     private static String pathSave = "d:\\dataSave\\"; // 保存位置
 
@@ -62,6 +59,8 @@ public class DataExtractUtil {
     private static SimpleDateFormat formatM = new SimpleDateFormat("yyyyMM");
 
     private static SimpleDateFormat formatd = new SimpleDateFormat("yyyyMMdd");
+
+    private static int timeout = 9000; // 超时设置
 
     // private static Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create(); // 保留特殊字符
     private static Gson gson = new Gson();
@@ -167,7 +166,7 @@ public class DataExtractUtil {
 
     public static Document jsoupDoc(String url, Map<String, String> map, Method method) throws Exception {
         Connection connection = Jsoup.connect(url);
-        connection.timeout(5000); // 设置连接超时时间
+        connection.timeout(timeout); // 设置连接超时时间
         // 给服务器发消息头，告诉服务器，俺不是java程序。
         connection.header("User-Agent", "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Win64; x64; Trident/5.0)");
         connection.header("Accept", "application/json, text/javascript, */*; q=0.01");
