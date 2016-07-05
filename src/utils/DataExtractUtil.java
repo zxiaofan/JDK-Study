@@ -45,25 +45,10 @@ public class DataExtractUtil {
 
     private static String timeEnd = "20160630";
 
-    // sql中的所有表名请用dynamicTableName代替
-    private static String sql = "sql";
-
-    private static String pathSave = "d:\\dataSave\\"; // 保存位置
-
-    private static String url = "http://172.16.7.21:4385/Database/queryData";
-
-    private static String referer = "http://172.16.7.21:4385/";
-
-    private static SimpleDateFormat formaty = new SimpleDateFormat("yyyy");
-
-    private static SimpleDateFormat formatM = new SimpleDateFormat("yyyyMM");
-
-    private static SimpleDateFormat formatd = new SimpleDateFormat("yyyyMMdd");
-
     private static int timeout = 9000; // 超时设置
 
-    // private static Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create(); // 保留特殊字符
-    private static Gson gson = new Gson();
+    // sql中的所有表名请用dynamicTableName代替
+    private static String sql = "sql";
 
     public static void main(String[] args) throws Exception {
         DataExtractUtil.start();
@@ -224,6 +209,22 @@ public class DataExtractUtil {
             }
         }
     }
+
+    private static String pathSave = "d:\\dataSave\\"; // 保存位置
+
+    private static String url = "http://172.16.7.21:4385/Database/queryData";
+
+    private static String referer = "http://172.16.7.21:4385/";
+
+    private static SimpleDateFormat formaty = new SimpleDateFormat("yyyy");
+
+    private static SimpleDateFormat formatM = new SimpleDateFormat("yyyyMM");
+
+    private static SimpleDateFormat formatd = new SimpleDateFormat("yyyyMMdd");
+
+    // private static Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create(); // 保留特殊字符
+    private static Gson gson = new Gson();
+
 }
 
 class queryVo {
