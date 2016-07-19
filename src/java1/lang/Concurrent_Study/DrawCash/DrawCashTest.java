@@ -1,6 +1,6 @@
 /*
  * 文件名：_2_DrawCash.java
- * 版权：Copyright 2007-2015 517na Tech. Co. Ltd. All Rights Reserved. 
+ * 版权：Copyright 2007-2015 zxiaofan.com. Co. Ltd. All Rights Reserved. 
  * 描述： _2_DrawCash.java
  * 修改人：yunhai
  * 修改时间：2015年11月17日

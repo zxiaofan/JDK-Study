@@ -1,6 +1,6 @@
 /*
  * 文件名：LinkedList_Study.java
- * 版权：Copyright 2007-2016 517na Tech. Co. Ltd. All Rights Reserved. 
+ * 版权：Copyright 2007-2016 zxiaofan.com. Co. Ltd. All Rights Reserved. 
  * 描述： LinkedList_Study.java
  * 修改人：xiaofan
  * 修改时间：2016年3月27日

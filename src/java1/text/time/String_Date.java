@@ -1,6 +1,6 @@
 /*
  * 文件名：String_Date.java
- * 版权：Copyright 2007-2015 517na Tech. Co. Ltd. All Rights Reserved. 
+ * 版权：Copyright 2007-2015 zxiaofan.com. Co. Ltd. All Rights Reserved. 
  * 描述： String_Date.java
  * 修改人：yunhai
  * 修改时间：2015年11月19日
