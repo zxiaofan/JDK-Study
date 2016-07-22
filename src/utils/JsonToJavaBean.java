@@ -13,8 +13,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -63,7 +63,7 @@ public class JsonToJavaBean {
 
     private static Gson gson = new Gson();
 
-    private static List<Bean> fields = new ArrayList<>();
+    private static Set<Bean> fields = new HashSet();
 
     /**
      * 转bean.
@@ -81,14 +81,33 @@ public class JsonToJavaBean {
         // 第一个field
         int li = json.indexOf("\"");
         int lj = json.indexOf("\":");
-        int lk = json.indexOf(",\"");
-        int ri, rj, rk;
+        int lk = json.indexOf(",\"") + 1;
+        int ri = json.length(), rj = json.length(), rk = json.length();
         // 先默认全部String
-        Bean bean1 = new Bean();
-        bean1.setFieldName(json.substring(li + 1, lj));
-        bean1.setObjType(ObjType.String);
-        System.out.println(gson.toJson(bean1));
-        System.out.println(json);
+        while (lj < rj) {
+            Bean bean1 = new Bean();
+            bean1.setFieldName(json.substring(li + 1, lj));
+            if (lj == json.indexOf("\":\"")) {
+                bean1.setObjType(ObjType.String);
+            } else if (lj == json.indexOf("\":{")) { // Object
+                bean1.setObjType(ObjType.Defined);
+            } else if (lj == json.indexOf("\":[{")) { // List
+                bean1.setObjType(ObjType.List);
+            } else { // 暂不区分Int、double
+                bean1.setObjType(ObjType.Double);
+            }
+            fields.add(bean1);
+            rj = json.lastIndexOf("\":");
+            ri = json.lastIndexOf("\"", rj - 1);
+            rk = json.lastIndexOf(",\"");
+            Bean bean2 = new Bean();
+            bean2.setFieldName(json.substring(ri + 1, rj));
+            bean2.setObjType(ObjType.String);
+            fields.add(bean2);
+            json = json.substring(lk, rk);
+            System.out.println(gson.toJson(fields));
+        }
+
     }
 
     private static String readTextFile(String sFileName, String sEncode) {
