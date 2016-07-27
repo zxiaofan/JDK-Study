@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,14 +36,11 @@ public class JsonToJavaBean {
     }
 
     public static void start() {
-        // System.out.println("请输入待转换的json文件的绝对路径：");
+        System.out.println("请输入待转换的json文件的绝对路径：");
         // Scanner scanner = new Scanner(System.in);
         // String path = scanner.nextLine();
-        // System.out.println("请输入生成Java文件的包名：");
-        // String packageName = scanner.nextLine();
-
-        String path = "C:\\Users\\yunhai\\Desktop\\json.txt";
         String packageName = "";
+        String path = "‪D:\\json.txt";
         toJavaBean(path, packageName);
         System.out.println("转换完成，请到" + outputPath + "查看转换结果！");
         try {
@@ -77,37 +75,27 @@ public class JsonToJavaBean {
             throw new RuntimeException("不是标准的json文件:{...}"); // 暂不做过多校验
         }
         json = formatStr(json);
-        // 逐步搜索-收缩
         // 第一个field
-        int li = json.indexOf("\"");
-        int lj = json.indexOf("\":");
-        int lk = json.indexOf(",\"") + 1;
-        int ri = json.length(), rj = json.length(), rk = json.length();
-        // 先默认全部String
-        while (lj < rj) {
-            Bean bean1 = new Bean();
-            bean1.setFieldName(json.substring(li + 1, lj));
-            if (lj == json.indexOf("\":\"")) {
-                bean1.setObjType(ObjType.String);
-            } else if (lj == json.indexOf("\":{")) { // Object
-                bean1.setObjType(ObjType.Defined);
-            } else if (lj == json.indexOf("\":[{")) { // List
-                bean1.setObjType(ObjType.List);
-            } else { // 暂不区分Int、double
-                bean1.setObjType(ObjType.Double);
+        int i = 0, j = 0, k = 0;
+        while (i < json.length()) {
+            i = json.indexOf("\"");
+            j = json.indexOf("\":");
+            k = json.indexOf(",");
+            Bean bean = new Bean();
+            bean.setFieldName(json.substring(i + 1, j));
+            String beanValue = json.substring(j + 2, k);
+            if (beanValue.startsWith("\"")) {
+                bean.setFieldType(ObjType.String.getType());
+            } else if (beanValue.startsWith("{")) {
+                bean.setFieldType(ObjType.Defined.getType());
+            } else if (beanValue.startsWith("[")) {
+                bean.setFieldType(ObjType.List.getType());
+            } else if (beanValue.contains(".")) {
+                bean.setFieldType(ObjType.Double.getType());
+            } else {
+                bean.setFieldType(ObjType.Int.getType());
             }
-            fields.add(bean1);
-            rj = json.lastIndexOf("\":");
-            ri = json.lastIndexOf("\"", rj - 1);
-            rk = json.lastIndexOf(",\"");
-            Bean bean2 = new Bean();
-            bean2.setFieldName(json.substring(ri + 1, rj));
-            bean2.setObjType(ObjType.String);
-            fields.add(bean2);
-            json = json.substring(lk, rk);
-            System.out.println(gson.toJson(fields));
         }
-
     }
 
     private static String readTextFile(String sFileName, String sEncode) {
@@ -171,12 +159,14 @@ public class JsonToJavaBean {
      * 输出路径.
      */
     private static String outputPath = "d:\\JsonToJavaBean\\";
+
+    private static Stack<String> stack = new Stack<>();
 }
 
 class Bean {
     private String fieldName;
 
-    private ObjType ObjType;
+    private String fieldType;
 
     public String getFieldName() {
         return fieldName;
@@ -186,18 +176,18 @@ class Bean {
         this.fieldName = fieldName;
     }
 
-    public ObjType getObjType() {
-        return ObjType;
+    public String getFieldType() {
+        return fieldType;
     }
 
-    public void setObjType(ObjType objType) {
-        ObjType = objType;
+    public void setFieldType(String fieldType) {
+        this.fieldType = fieldType;
     }
 
 }
 
 enum ObjType {
-    String, Int, Float, Date, Double, BigDecimal, List("List"), Map("Map"), Set("Set"), Defined;
+    String("String"), Int("int"), Float("float"), Date("Date"), Double("double"), BigDecimal("Bigdecimal"), List("List"), Map("Map"), Set("Set"), Defined("Defined");
 
     private String type;
 
@@ -205,7 +195,8 @@ enum ObjType {
         this.type = type;
     }
 
-    private ObjType() {
+    public String getType() {
+        return type;
     }
 
 }
