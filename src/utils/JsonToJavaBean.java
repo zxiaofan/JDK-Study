@@ -13,8 +13,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.HashSet;
-import java.util.Set;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,25 +29,27 @@ import com.google.gson.Gson;
 /**
  * 最近需将大量json转换为对应的JavaBean，网上有诸多在线转换工具，但是由于公司对代码要求checkStyle，故自己写个转换工具
  * 
- * 不喜欢重复且没技术含量的工作，要么沉沦要么改变。
- * 
  * 持续更新地址：https://github.com/zxiaofan/JDK-Study/tree/master/src/utils
  * 
  * @author yunhai
  */
 public class JsonToJavaBean {
+    static JsonToJavaBean start = new JsonToJavaBean();
+
     public static void main(String[] args) {
-        JsonToJavaBean.start();
+        start.start();
     }
 
-    public static void start() {
-        System.out.println("请输入待转换的json文件的绝对路径：");
+    public void start() {
+        // System.out.println("请输入待转换的json文件的绝对路径：");
         // Scanner scanner = new Scanner(System.in);
         // String path = scanner.nextLine();
         String packageName = "";
-        String path = "‪D:\\json.txt";
-        toJavaBean(path, packageName);
+        String path = "D:\\json.txt";
+        String json = readTextFile(path, encode);
+        toJavaBean(json, packageName);
         System.out.println("转换完成，请到" + outputPath + "查看转换结果！");
+        createFile(outputPath);
         try {
             String[] cmd = new String[5];
             cmd[0] = "cmd";
@@ -61,44 +68,89 @@ public class JsonToJavaBean {
 
     private static Gson gson = new Gson();
 
-    private static Set<Bean> fields = new HashSet();
+    private static Map<String, List<Bean>> fields = new HashMap<>();
 
     /**
      * 转bean.
      * 
-     * @param path
+     * @param json
      * @param packageName
      */
-    private static void toJavaBean(String path, String packageName) {
-        String json = readTextFile(path, encode);
+    private void toJavaBean(String json, String packageName) {
         if (!(json.startsWith("{") || json.endsWith("}"))) {
             throw new RuntimeException("不是标准的json文件:{...}"); // 暂不做过多校验
         }
         json = formatStr(json);
-        // 第一个field
-        int i = 0, j = 0, k = 0;
-        while (i < json.length()) {
-            i = json.indexOf("\"");
-            j = json.indexOf("\":");
-            k = json.indexOf(",");
-            Bean bean = new Bean();
-            bean.setFieldName(json.substring(i + 1, j));
-            String beanValue = json.substring(j + 2, k);
-            if (beanValue.startsWith("\"")) {
-                bean.setFieldType(ObjType.String.getType());
-            } else if (beanValue.startsWith("{")) {
-                bean.setFieldType(ObjType.Defined.getType());
-            } else if (beanValue.startsWith("[")) {
-                bean.setFieldType(ObjType.List.getType());
-            } else if (beanValue.contains(".")) {
-                bean.setFieldType(ObjType.Double.getType());
-            } else {
-                bean.setFieldType(ObjType.Int.getType());
-            }
-        }
+        List<Bean> beans = new ArrayList<>();
+        buildOrignBean(json, beans, "Root");
+        System.out.println(gson.toJson(fields));
     }
 
-    private static String readTextFile(String sFileName, String sEncode) {
+    public void buildOrignBean(String json, List<Bean> beans, String className) {
+        Map<String, Object> map = gson.fromJson(json, Map.class);
+        Iterator<Entry<String, Object>> itr = map.entrySet().iterator();
+        while (itr.hasNext()) {
+            Bean bean = new Bean();
+            Entry<String, Object> entry = itr.next();
+            String k = entry.getKey();
+            bean.setFieldName(k);
+            Object v = entry.getValue();
+            if (v == null || v.toString().equals("[]")) {
+                itr.remove();
+                continue;
+            }
+            if (v instanceof Integer) {
+                bean.setFieldType(ObjType.Int.getType());
+                entry.setValue("Integer");
+            } else if (v instanceof BigDecimal) {
+                bean.setFieldType(ObjType.Double.getType());
+                entry.setValue("Double");
+            } else if (v instanceof Double) {
+                bean.setFieldType(ObjType.Double.getType());
+                entry.setValue("Double");
+            } else if (v instanceof String) {
+                bean.setFieldType(ObjType.String.getType());
+                entry.setValue("String");
+            } else {
+                String childJson = v.toString();
+                if (childJson.startsWith("{")) {
+                    String childName = k;
+                    entry.setValue(childName);
+                    bean.setFieldName(k);
+                    bean.setFieldType(ObjType.Defined.getType());
+                    List<Bean> newBeans = new ArrayList<>();
+                    buildOrignBean(childJson, newBeans, k);
+                    fields.put(k, newBeans);
+                } else if (childJson.startsWith("[")) {
+                    bean.setFieldName(k);
+                    bean.setFieldType(ObjType.List.getType());
+
+                    childJson = getAllFieldOfList(childJson);
+                    System.out.println(childJson);
+                    Map<String, Object> childMap = gson.fromJson(childJson, Map.class);
+                    List<Bean> newBeans = new ArrayList<>();
+                    buildOrignBean(gson.toJson(childMap), newBeans, k);
+                } else {
+                    entry.setValue("String");
+                }
+            }
+            beans.add(bean);
+        }
+        fields.put(className, beans);
+    }
+
+    /**
+     * TODO 添加方法注释.
+     * 
+     * @param childJson
+     * @return
+     */
+    private String getAllFieldOfList(String childJson) {
+        childJson = childJson.substring(1, childJson.length() - 1);
+        return null;
+    }
+
+    private String readTextFile(String sFileName, String sEncode) {
         StringBuffer sbStr = new StringBuffer();
         try {
             File ff = new File(sFileName);
@@ -122,7 +174,7 @@ public class JsonToJavaBean {
      * @param path
      *            路径
      */
-    private static void createFile(String path) {
+    private void createFile(String path) {
         File file = new File(path);
         if (!file.exists()) {
             if (path.contains(".")) {
@@ -146,11 +198,16 @@ public class JsonToJavaBean {
      *            str
      * @return str
      */
-    private static String formatStr(String str) {
+    private String formatStr(String str) {
         if (str != null) {
             Pattern p = Pattern.compile("\\s*|\t|\r|\n");
             Matcher m = p.matcher(str);
             str = m.replaceAll("");
+            // json = json.replace(":\".*?\"(?=[,}])", ":\"" + typeString + "\"");
+            p = Pattern.compile(":\".*?\"(?=[,}])");
+            m = p.matcher(str);
+            str = m.replaceAll(":\"" + typeString + "\"");
+
         }
         return str;
     }
@@ -159,6 +216,8 @@ public class JsonToJavaBean {
      * 输出路径.
      */
     private static String outputPath = "d:\\JsonToJavaBean\\";
+
+    private static String typeString = "typeString";
 
     private static Stack<String> stack = new Stack<>();
 }
