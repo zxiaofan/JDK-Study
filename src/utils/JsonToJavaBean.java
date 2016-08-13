@@ -14,7 +14,6 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -42,7 +41,7 @@ public class JsonToJavaBean {
     // ====== 修改参数 ====== //
     private String path = "D:\\json.txt"; // 待转换Json路径
 
-    private static String packageName = "com.better517na.hotelPurchaseInterfaceWeb"; // packageName包名.
+    private static String packageName = "com.github.zxiaofan"; // packageName包名.
 
     private String beanRootName = "Root"; // 根Bean名字
     // ====== 修改参数 ====== //
@@ -54,6 +53,16 @@ public class JsonToJavaBean {
     private static String packagePath = "model.vo"; // package默认加入该路径
 
     private static String outputPath = "d:\\JsonToJavaBean\\"; // 输出路径
+
+    // [double]特殊匹配规则(前缀|后缀|包含|类型),默认不区分大小写
+    private static String matchRuleDouble = "|Date_Time_Hour||long,|!id_type|money_price|BigDecimal,|Cost|!time|BigDecimal";
+
+    // [String]特殊匹配规则(前缀|后缀|包含|类型),默认不区分大小写
+    private static String matchRuleString = "|Date_Time_Hour||Date," + matchRuleDouble; // 自动覆盖double规则第一条
+
+    private static boolean ismachRule = true; // 是否开启特殊匹配规则
+
+    private static boolean machRuleIgnoreCase = true; // 特殊匹配规则默认不区分大小写
 
     static JsonToJavaBean start = new JsonToJavaBean();
 
@@ -97,6 +106,8 @@ public class JsonToJavaBean {
             throw new RuntimeException("不是标准的json文件:{...}"); // 暂不做过多校验
         }
         json = formatStr(json);
+        buildRule(matchRuleDouble, listRuleDouble);
+        buildRule(matchRuleString, listRuleString);
         List<Bean> beans = new ArrayList<>();
         buildOrignBean(json, beans, beanRootName);
         formatBean();
@@ -218,7 +229,7 @@ public class JsonToJavaBean {
         while (itr.hasNext()) {
             Bean bean = new Bean();
             Entry<String, Object> entry = itr.next();
-            String k = entry.getKey();
+            String k = entry.getKey(); // FieldName
             bean.setFieldName(k);
             Object v = entry.getValue();
             if (v == null || v.toString().equals("[]")) {
@@ -230,12 +241,14 @@ public class JsonToJavaBean {
                 if (defaultInteger) {
                     bean.setFieldType(ObjType.Integer);
                 }
-            } else if (v instanceof BigDecimal) {
-                bean.setFieldType(ObjType.BigDecimal);
             } else if (v instanceof Double) {
-                bean.setFieldType(ObjType.Double);
+                // bean.setFieldType(ObjType.Double);
+                bean.setFieldType(matchRule(k, ObjType.Double, listRuleDouble));
+            } else if (v instanceof Boolean) {
+                bean.setFieldType(ObjType.Boolean);
             } else if (v instanceof String) {
                 bean.setFieldType(ObjType.String);
+                bean.setFieldType(matchRule(k, ObjType.String, listRuleString));
             } else {
                 String childJson = v.toString();
                 if (childJson.startsWith("{")) {
@@ -249,7 +262,12 @@ public class JsonToJavaBean {
                     // System.out.println(childJson);
                     List<Object> childList = gson.fromJson(childJson, List.class);
                     List<Bean> newBeans = new ArrayList<>();
-                    buildOrignBean(gson.toJson(childList.get(0)), newBeans, k);
+                    if (!childList.toString().startsWith("[{")) { // 匹配特殊格式["ANY"],Expected BEGIN_OBJECT but was STRING
+                        bean.setFieldType(ObjType.ListString);
+                        beans.add(bean);
+                    } else {
+                        buildOrignBean(gson.toJson(childList.get(0)), newBeans, k);
+                    }
                 } else {
                     bean.setFieldType(ObjType.String);
                 }
@@ -257,6 +275,100 @@ public class JsonToJavaBean {
             beans.add(bean);
         }
         fields.put(className, beans);
+
+    }
+
+    /**
+     * 构建特殊匹配规则.
+     * 
+     */
+    private String matchRule(String fieldName, String fieldType, List<String[]> listRule) {
+        if (!ismachRule) {
+            return fieldType;
+        }
+        // |Date_Time||long,|!id_type|money_price|BigDecimal,|Cost|!time|BigDecimal
+        if (machRuleIgnoreCase) {
+            fieldName = fieldName.toLowerCase();
+        }
+        for (String[] oneRule : listRule) {
+            boolean special = true; // 满足特殊匹配规则
+            boolean oneRuleDotFail = false; // 不匹配规则中任意一项
+            for (int i = 0; i < oneRule.length - 1; i++) {
+                if (oneRuleDotFail) {
+                    break;
+                }
+                String[] tempArr = null;
+                String tempStr = oneRule[i];
+                if (tempStr != null && !"".equals(tempStr)) {
+                    boolean fei = false;
+                    if (tempStr.startsWith("!")) {
+                        fei = true;
+                        tempStr = tempStr.replace("!", "");
+                    }
+                    tempArr = tempStr.split("_"); // 前/后缀规则
+                    boolean bool1 = false; // 前缀中若含有两个匹配，满足一个则即为true
+                    if (tempArr != null) {
+                        for (String str : tempArr) {
+                            if (bool1) {
+                                break;
+                            }
+                            if (fei && oneRuleDotFail) {
+                                break;
+                            }
+                            if (machRuleIgnoreCase) {
+                                str = str.toLowerCase();
+                            }
+                            switch (i) {
+                                case 0: // 前缀
+                                    if (fei ^ fieldName.startsWith(str)) {
+                                        bool1 = true;
+                                        special = true;
+                                    } else {
+                                        special = false;
+                                        oneRuleDotFail = true; // 不匹配规则中任意一项，直接跳过
+                                    }
+                                    break;
+                                case 1: // 后缀
+                                    if (fei ^ fieldName.endsWith(str)) {
+                                        bool1 = true;
+                                        special = true;
+                                    } else {
+                                        special = false;
+                                        oneRuleDotFail = true;
+                                    }
+                                    break;
+                                case 2: // 包含
+                                    if (fei ^ fieldName.contains(str)) {
+                                        bool1 = true;
+                                        special = true;
+                                    } else {
+                                        special = false;
+                                        oneRuleDotFail = true;
+                                    }
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+                }
+
+            }
+            if (special) {
+                return oneRule[3];
+            }
+        }
+        return fieldType;
+
+    }
+
+    public void buildRule(String matchRule, List<String[]> listRule) {
+        if (matchRule.length() != 0 && listRule.isEmpty()) {
+            String[] rules = matchRule.split(",");
+            for (String rule : rules) {
+                listRule.add(rule.split("\\|")); // 自定义规则列表
+            }
+        }
     }
 
     private String readTextFile(String sFileName, String sEncode) {
@@ -351,6 +463,10 @@ public class JsonToJavaBean {
     private static Gson gson = new Gson();
 
     private static Map<String, List<Bean>> fields = new HashMap<>();
+
+    private static List<String[]> listRuleDouble = new ArrayList<>(); // 匹配规则
+
+    private static List<String[]> listRuleString = new ArrayList<>(); // 匹配规则
 
     private static String importJar = "github.zxiaofan.com";
 
@@ -490,15 +606,21 @@ class ObjType {
 
     static final String Integer = "Integer";
 
+    static final String Boolean = "boolean";
+
     static final String Float = "float";
 
     static final String Date = "Date";
 
+    static final String Long = "long";
+
     static final String Double = "double";
 
-    static final String BigDecimal = "Bigdecimal";
+    static final String BigDecimal = "BigDecimal";
 
     static final String List = "List";
+
+    static final String ListString = "List<String>"; // 特殊list专用
 
     static final String Map = "Map";
 
