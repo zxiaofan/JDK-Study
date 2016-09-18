@@ -13,9 +13,25 @@ import org.junit.Test;
 /**
  * 创建线程的两种方式。
  * 
+ * 1、创建Thread子类的一个实例并重写run方法：
+ * 
+ * 2、创建类时实现Runnable接口。
+ * 
+ * 线程池可以有效的管理实现了Runnable接口的线程，如果线程池满了，新线程将排队等候执行，直到线程池空闲出来为止。
+ * 
+ * 而如果线程是通过实现Thread子类实现的，这将会复杂一些。由于Java只允许单继承，所以如果自定义类需要继承其他类，则只能选择实现Runnable接口。
+ * 
+ * 有时我们要同时融合实现Runnable接口和Thread子类两种方式。例如，实现了Thread子类的实例可以执行多个实现了Runnable接口的线程。一个典型的应用就是线程池。
+ * 
  * @author yunhai
  */
 public class _1_MyFirstThread {
+    /**
+     * 一旦线程启动后start方法就会立即返回，而不会等到MyThread重写的run方法执行完毕才返回。
+     * 
+     * 就好像run方法是在另外一个cpu上执行一样。当run方法执行后，将会打印出run的输出内容.
+     * 
+     */
     @Test
     public void byExtends() { // 继承Thread类
         System.out.println("主线程ID:" + Thread.currentThread().getId());
@@ -39,6 +55,30 @@ public class _1_MyFirstThread {
         MyRunnable myRunnable = new MyRunnable();
         Thread thread = new Thread(myRunnable);
         thread.start();
+    }
+
+    @Test
+    public void byInnerClass() { // 亦可通过匿名内部类来继承Thread或者实现Runnable
+        // Thread匿名类
+        // 当新的线程的run方法执行以后，将会打印出字符串"线程ID：..."。
+        Thread t1 = new Thread() {
+            public void run() {
+                System.out.println("线程ID：" + Thread.currentThread().getId());
+            }
+        };
+        t1.start();
+        // 实现Runnable接口的匿名类
+        // Runnable myRunnable = new Runnable() {
+        // public void run() {
+        // System.out.println("线程ID：" + Thread.currentThread().getId());
+        // }
+        // };
+        Thread t2 = new Thread(new Runnable() {
+            public void run() {
+                System.out.println("线程ID：" + Thread.currentThread().getId());
+            }
+        });
+        t2.start();
     }
 
     /**
