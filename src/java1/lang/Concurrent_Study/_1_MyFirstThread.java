@@ -55,6 +55,8 @@ public class _1_MyFirstThread {
         MyRunnable myRunnable = new MyRunnable();
         Thread thread = new Thread(myRunnable);
         thread.start();
+        Thread thread1 = new Thread(myRunnable, "thread-hello"); // 线程名
+        thread1.start();
     }
 
     @Test
@@ -105,6 +107,7 @@ public class _1_MyFirstThread {
 
         @Override
         public void run() {
+            System.out.println(Thread.currentThread().getName());
             System.out.println("主线程ID:" + Thread.currentThread().getId());
         }
     }
