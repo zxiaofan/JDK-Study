@@ -2,16 +2,27 @@ package java1.lang.annotation.validation;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import com.google.gson.Gson;
+
+import java1.lang.annotation.SpecialParameterizedType;
 
 /**
  * @author github.zxiaofan.com
  *
  *         用于参数校验
  */
-@SuppressWarnings({"rawtypes", "unused"})
+@SuppressWarnings({"rawtypes", "unused", "unchecked"})
 public final class ValidationUtils {
 
     /**
@@ -42,6 +53,8 @@ public final class ValidationUtils {
         throw new RuntimeException("this is a util class,can not instance!");
     }
 
+    static Gson gson = new Gson();
+
     /**
      * 参数校验.
      * 
@@ -64,6 +77,357 @@ public final class ValidationUtils {
         }
 
         return list.isEmpty() ? null : packaging(list);
+    }
+
+    /**
+     * 长度处理.
+     * 
+     * @param obj
+     *            obj
+     * @return obj
+     * @throws Exception
+     *             Exception.
+     */
+    public static Object stringCut(Object obj) throws Exception {
+        if (null == obj) {
+            return null;
+        }
+        // 处理集合
+        if (obj instanceof List) {
+            List<Class> listRealClass = getRealClass(obj);
+            List<Object> listNew = (List<Object>) obj.getClass().newInstance();
+            List<Object> listOld = (List) obj; // gson.fromJson(gson.toJson(obj), List.class);
+            for (int i = 0; i < listOld.size(); i++) {
+                Object objNew = listOld.get(i);
+                objNew = gson.fromJson(gson.toJson(objNew), listRealClass.get(i));
+                objNew = stringCut(objNew);
+                listNew.add(objNew);
+            }
+            obj = listNew;
+        } else if (obj instanceof Set) {
+            List<Class> listRealClass = getRealClass(obj);
+            Set<Object> setNew = (Set<Object>) obj.getClass().newInstance();
+            Set<Object> setOld = (Set) obj; // gson.fromJson(gson.toJson(obj), Set.class);
+            for (Object set : setOld) {
+                int i = 0;
+                Object objNew = gson.fromJson(gson.toJson(set), listRealClass.get(i));
+                objNew = stringCut(objNew);
+                setNew.add(objNew);
+                i++;
+            }
+            obj = setNew;
+        } else if (obj instanceof Map) {
+            Map<?, ?> mapClass = getRealClassOfMap((Map<?, ?>) obj);
+            Map<Object, Object> mapNew = (Map<Object, Object>) obj.getClass().newInstance();
+            Map<?, ?> mapOld = (Map<?, ?>) obj; // gson.fromJson(gson.toJson(obj), Map.class);
+            for (Entry<?, ?> set : mapOld.entrySet()) {
+                Iterator ite = mapClass.entrySet().iterator();
+                Entry entry = null;
+                if (ite.hasNext()) {
+                    entry = (Entry) ite.next();
+                    Object objKey = stringCut(set.getKey());
+                    // objKey = gson.fromJson(set.getKey().toString(), (Class) entry.getKey());
+                    objKey = stringCut(objKey);
+                    Object objValue = stringCut(set.getValue());
+                    // objValue = gson.fromJson(gson.toJson(set.getValue()), (Class) entry.getValue());
+                    mapNew.put(objKey, objValue);
+                }
+            }
+            obj = mapNew;
+        } else { // Object 或 泛型T
+            cutObject(obj);
+        }
+        return obj;
+    }
+
+    /**
+     * 处理泛型Object.
+     * 
+     * @param obj
+     *            obj
+     * @param field
+     *            field
+     * @param genericName
+     *            genericName
+     * @throws IllegalAccessException
+     *             IllegalAccessException
+     */
+    private static void dealGenericObj(Object obj, Field field, String genericName) throws IllegalAccessException {
+        List<Class> listGenericClass = getGenericClass(obj, genericName);
+        field.setAccessible(true);
+        Object objGen = gson.fromJson(gson.toJson(field.get(obj)), listGenericClass.get(0)); // field.get(obj)获取泛型对象
+        try {
+            objGen = stringCut(objGen);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        field.set(obj, objGen);
+    }
+
+    /**
+     * 该Object内部属性含有泛型注解.
+     * 
+     * @param field
+     *            field
+     * @return isGeneric
+     */
+    private static String isGeneric(Field field) {
+        Annotation[] classAnnotation = field.getAnnotations();
+        StringCut stringCut = null;
+        for (Annotation annotation : classAnnotation) {
+            if (annotation.annotationType().getName().equals(StringCut.class.getName())) {
+                stringCut = (StringCut) annotation;
+                if (!"".equals(stringCut.isGeneric())) {
+                    return stringCut.isGeneric();
+                }
+            }
+        }
+        return "";
+    }
+
+    /**
+     * Object有StringCut注解.
+     * 
+     * @param obj
+     *            obj
+     * @return hasAnno
+     */
+    private static boolean hasAnnoOfStringCut(Object obj) {
+        Annotation[] classAnnotation = obj.getClass().getAnnotations();
+        boolean isTooLong = false;
+        for (Annotation annotation : classAnnotation) {
+            Class annotationType = annotation.annotationType();
+            if (annotationType.getName().equals(StringCut.class.getName())) {
+                isTooLong = true;
+                break;
+            }
+        }
+        return isTooLong;
+    }
+
+    /**
+     * 处理非集合类Object，包括泛型.
+     * 
+     * @param obj
+     *            obj
+     */
+    private static void cutObject(Object obj) {
+        Field[] fields = obj.getClass().getDeclaredFields();
+        String claName = obj.getClass().getName();
+        for (Field field : fields) {
+            try {
+                String isGeneric = isGeneric(field);
+                if (!"".equals(isGeneric)) {
+                    dealGenericObj(obj, field, isGeneric);
+                } else {
+                    dealBasicObject(obj, claName, field);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private static List<Class> getGenericClass(Object obj, String genericName) throws IllegalAccessException {
+        List<Class> listGenericClass = new ArrayList<>();
+        Field[] fds = obj.getClass().getDeclaredFields();
+        for (Field fd : fds) {
+            fd.setAccessible(true);
+            if (genericName.equals(fd.getName())) {
+                listGenericClass.add(fd.get(obj).getClass());
+            }
+        }
+        return listGenericClass;
+    }
+
+    private static List<Class> getRealClass(Object obj) throws IllegalAccessException {
+        List<Class> listRealClass = new ArrayList<>();
+        Field[] fields = obj.getClass().getDeclaredFields();
+        if (obj instanceof List) {
+            for (Field fd : fields) {
+                fd.setAccessible(true);
+                if ("elementData".equals(fd.getName())) {
+                    Object[] objs = (Object[]) fd.get(obj);
+                    for (Object object : objs) {
+                        if (null != object) {
+                            listRealClass.add(object.getClass());
+                        }
+                    }
+                }
+            }
+        } else if (obj instanceof Set) {
+            for (Field fd : fields) {
+                if ("map".equals(fd.getName())) {
+                    fd.setAccessible(true);
+                    Map<?, ?> map = (Map<?, ?>) fd.get(obj);
+                    for (Object object : map.keySet()) {
+                        if (null != object) {
+                            listRealClass.add(object.getClass());
+                        }
+                    }
+                }
+            }
+        } else {
+            listRealClass.add(obj.getClass());
+        }
+        return listRealClass;
+    }
+
+    private static Map<Object, Object> getRealClassOfMap(Map<?, ?> obj) throws IllegalAccessException {
+        Map<Object, Object> map = new HashMap();
+        Field[] fields = obj.getClass().getDeclaredFields();
+        for (Field fd : fields) {
+            fd.setAccessible(true);
+            if ("table".equals(fd.getName())) {
+                Object key = null;
+                Object value = null;
+                for (Entry<?, ?> entry : obj.entrySet()) {
+                    if (null != entry) {
+                        Class keyClass = getRealClass(entry.getKey()).get(0);
+                        Type typeKey = null;
+                        if (entry.getKey() instanceof List) {
+                            typeKey = new SpecialParameterizedType(List.class, keyClass);
+                        } else if (entry.getKey() instanceof Set) {
+                            typeKey = new SpecialParameterizedType(Set.class, keyClass);
+                        } else if (entry.getKey() instanceof Map) {
+                            typeKey = new SpecialParameterizedType(Map.class, keyClass);
+                        }
+                        Class valueClass = getRealClass(entry.getValue()).get(0);
+                        Type typeValue = null;
+                        if (entry.getValue() instanceof List) {
+                            typeValue = new SpecialParameterizedType(List.class, keyClass);
+                        } else if (entry.getValue() instanceof Set) {
+                            typeValue = new SpecialParameterizedType(Set.class, keyClass);
+                        } else if (entry.getValue() instanceof Map) {
+                            typeValue = new SpecialParameterizedType(Map.class, keyClass);
+                        }
+                        if (null != typeKey) {
+                            key = typeKey;
+                        } else {
+                            key = keyClass;
+                        }
+                        if (null != typeValue) {
+                            value = typeValue;
+                        } else {
+                            value = valueClass;
+                        }
+                        map.put(key, value);
+                    }
+                }
+            }
+        }
+        return map;
+    }
+
+    /**
+     * 处理基础Object.
+     * 
+     * @param obj
+     *            参数
+     * @param claName
+     *            类名
+     * @param field
+     *            属性
+     * @throws Exception
+     *             e
+     */
+    private static void dealBasicObject(Object obj, String claName, Field field) throws Exception {
+        boolean isTooLong = hasAnnoOfStringCut(obj);
+        if (!isTooLong) {
+            return;
+        }
+        Date date;
+        Object value;
+        String fieldName;
+        Class type;
+        type = field.getType();
+        fieldName = field.getName();
+        Annotation[] annotations = field.getAnnotations();
+        field.setAccessible(true);
+        value = field.get(obj);
+        if (type.isPrimitive() || String.class.getName().equals(type.getName())) {
+            for (Annotation an : annotations) {
+                if (an.annotationType().getName().equals(StringCut.class.getName())) {
+                    dealTooLong(obj, claName, field, value, fieldName, type, an);
+                }
+            }
+        } else {
+            value = stringCut(value);
+            field.set(obj, value);
+        }
+    }
+
+    private static Class getRealClass(Field field) {
+        Type fc = field.getGenericType();
+        ParameterizedType pt = null;
+        try {
+            if (fc instanceof ParameterizedType) {
+                pt = (ParameterizedType) fc;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        Class genericClazz = null;
+        if (null != pt) {
+            genericClazz = (Class) pt.getActualTypeArguments()[0];
+        }
+        return genericClazz;
+    }
+
+    /**
+     * 处理含有@StringCut的属性，超长则截取.
+     * 
+     * @param obj
+     *            对象
+     * @param an
+     *            注解
+     * @param claName
+     *            类型
+     * @param field
+     *            属性
+     * @param value
+     *            属性值
+     * @param fieldName
+     *            属性名称
+     * @param type
+     *            类型
+     * @throws Exception
+     *             e
+     */
+    private static void dealTooLong(Object obj, String claName, Field field, Object value, String fieldName, Class type, Annotation an) {
+        StringCut stringCut = (StringCut) an;
+        if (String.class.equals(type)) {
+            if (null != value && value.toString().length() > stringCut.maxLength() && stringCut.maxLength() != 0) {
+                try {
+                    // WriteLogBusi.writeLocalLog(fieldName, value.toString());
+                    if (stringCut.isKeepHead()) {
+                        field.set(obj, value.toString().substring(0, stringCut.maxLength()));
+                    } else {
+                        field.set(obj, value.toString().substring(value.toString().length() - stringCut.maxLength()));
+                    }
+                } catch (IllegalArgumentException | IllegalAccessException e) {
+                    // WriteLogBusi.writeLocalLog(fieldName, e.getMessage() + e.toString());
+                }
+            }
+            if (null != value && value.toString().length() < stringCut.minLength()) {
+                int addLength = stringCut.minLength() - value.toString().length();
+                String addValue = "";
+                while (addValue.length() < addLength) {
+                    addValue += stringCut.completion();
+                }
+                addValue = addValue.substring(0, addLength);
+                try {
+                    // WriteLogBusi.writeLocalLog(fieldName, value.toString());
+                    if (stringCut.isKeepHead()) {
+                        field.set(obj, value.toString() + addValue);
+                    } else {
+                        field.set(obj, addValue + value.toString());
+                    }
+                } catch (IllegalArgumentException | IllegalAccessException e) {
+                    // WriteLogBusi.writeLocalLog(fieldName, e.getMessage() + e.toString());
+                }
+            }
+        }
     }
 
     /**
