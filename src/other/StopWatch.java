@@ -22,6 +22,12 @@ public class StopWatch {
 
     private boolean running = false;
 
+    public StopWatch() { // 支持创建实例及开始计时，调用start方法重新计时。
+        super();
+        this.startTime = System.currentTimeMillis();
+        this.running = true;
+    }
+
     public void start() {
         this.startTime = System.currentTimeMillis();
         this.running = true;
