@@ -24,8 +24,8 @@ public @interface StringCut {
     // 保留头部
     boolean isKeepHead() default true;
 
-    // 泛型
-    String isGeneric() default "";
+    // // 泛型
+    // String isGeneric() default "";
 
     // 参数或者字段描述,这样能够显示友好的异常信息
     String description() default "";

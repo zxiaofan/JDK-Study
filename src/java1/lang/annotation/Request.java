@@ -2,8 +2,6 @@ package java1.lang.annotation;
 
 import java.util.Map;
 
-import java1.lang.annotation.validation.StringCut;
-
 public class Request<T> {
 
     /**
@@ -14,7 +12,7 @@ public class Request<T> {
     /**
      * 添加字段注释.
      */
-    @StringCut(isGeneric = "obj")
+    // @StringCut(isGeneric = "obj")
     private T obj;
 
     /**

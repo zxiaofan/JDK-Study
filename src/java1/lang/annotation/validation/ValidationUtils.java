@@ -2,8 +2,10 @@ package java1.lang.annotation.validation;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -152,16 +154,44 @@ public final class ValidationUtils {
      * @throws IllegalAccessException
      *             IllegalAccessException
      */
-    private static void dealGenericObj(Object obj, Field field, String genericName) throws IllegalAccessException {
+    private static void dealGenericObj(Object obj, Field field, String genericName) throws Exception {
         List<Class> listGenericClass = getGenericClass(obj, genericName);
         field.setAccessible(true);
-        Object objGen = gson.fromJson(gson.toJson(field.get(obj)), listGenericClass.get(0)); // field.get(obj)获取泛型对象
-        try {
-            objGen = stringCut(objGen);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        Object objGen = null;
+        objGen = stringCut(field.get(obj)); // 避免Request<List<AnnoVo>>
+        // objGen = gson.fromJson(gson.toJson(field.get(obj)), listGenericClass.get(0)); // field.get(obj)获取泛型对象
+        // try {
+        // objGen = stringCut(objGen);
+        // } catch (Exception e) {
+        // e.printStackTrace();
+        // }
         field.set(obj, objGen);
+    }
+
+    /**
+     * Type -> Class
+     */
+    private static Class getClass(Type type, int i) {
+        if (type instanceof ParameterizedType) { // 处理泛型类型
+            return getGenericClass((ParameterizedType) type, i);
+        } else if (type instanceof TypeVariable) {
+            return (Class) getClass(((TypeVariable) type).getBounds()[0], 0); // 处理泛型擦拭对象
+        } else {// class本身也是type，强制转型
+            return (Class) type;
+        }
+    }
+
+    private static Class getGenericClass(ParameterizedType parameterizedType, int i) {
+        Object genericClass = parameterizedType.getActualTypeArguments()[i];
+        if (genericClass instanceof ParameterizedType) { // 处理多级泛型
+            return (Class) ((ParameterizedType) genericClass).getRawType();
+        } else if (genericClass instanceof GenericArrayType) { // 处理数组泛型
+            return (Class) ((GenericArrayType) genericClass).getGenericComponentType();
+        } else if (genericClass instanceof TypeVariable) { // 处理泛型擦拭对象
+            return (Class) getClass(((TypeVariable) genericClass).getBounds()[0], 0);
+        } else {
+            return (Class) genericClass;
+        }
     }
 
     /**
@@ -171,18 +201,22 @@ public final class ValidationUtils {
      *            field
      * @return isGeneric
      */
-    private static String isGeneric(Field field) {
-        Annotation[] classAnnotation = field.getAnnotations();
-        StringCut stringCut = null;
-        for (Annotation annotation : classAnnotation) {
-            if (annotation.annotationType().getName().equals(StringCut.class.getName())) {
-                stringCut = (StringCut) annotation;
-                if (!"".equals(stringCut.isGeneric())) {
-                    return stringCut.isGeneric();
-                }
-            }
+    private static boolean isGeneric(Field field) {
+        if (field.getGenericType() instanceof ParameterizedType || field.getGenericType() instanceof TypeVariable) { // 判断是否是泛型类型
+            return true;
         }
-        return "";
+        // Annotation[] classAnnotation = field.getAnnotations();
+        // StringCut stringCut = null;
+        // for (Annotation annotation : classAnnotation) {
+        // if (annotation.annotationType().getName().equals(StringCut.class.getName())) {
+        // stringCut = (StringCut) annotation;
+        // if (!"".equals(stringCut.isGeneric())) {
+        // return stringCut.isGeneric();
+        // }
+        // }
+        // }
+        // return "";
+        return false;
     }
 
     /**
@@ -212,13 +246,20 @@ public final class ValidationUtils {
      *            obj
      */
     private static void cutObject(Object obj) {
+        String genericName = null;
+        String geStr = getGenericType(obj);
+        // if ((geStr = obj.getClass().toGenericString()).endsWith(">")) { // java8直接使用toGenericString获取Request<T>的T
+        if (geStr.endsWith(">")) {
+            genericName = geStr.substring(geStr.lastIndexOf("<") + 1, geStr.length() - 1);
+        }
         Field[] fields = obj.getClass().getDeclaredFields();
         String claName = obj.getClass().getName();
         for (Field field : fields) {
             try {
-                String isGeneric = isGeneric(field);
-                if (!"".equals(isGeneric)) {
-                    dealGenericObj(obj, field, isGeneric);
+                Type type = field.getGenericType();
+                boolean isGeneric = isGeneric(field);
+                if (isGeneric && null != genericName && genericName.equals(type.toString())) {
+                    dealGenericObj(obj, field, field.getName());
                 } else {
                     dealBasicObject(obj, claName, field);
                 }
@@ -226,6 +267,65 @@ public final class ValidationUtils {
                 e.printStackTrace();
             }
         }
+    }
+
+    /**
+     * Java 7 获取Request<T>的T;Java8直接使用obj.getClass().toGenericString()即可.
+     * 
+     * @param obj
+     *            obj
+     * @return T
+     */
+    private static String getGenericType(Object obj) {
+        StringBuffer sb = new StringBuffer();
+        TypeVariable<?>[] typeparms = obj.getClass().getTypeParameters();
+        if (typeparms.length > 0) {
+            boolean first = true;
+            sb.append('<');
+            for (TypeVariable<?> typeparm : typeparms) {
+                if (!first)
+                    sb.append(',');
+                sb.append(typeparm.getName());
+                first = false;
+            }
+            sb.append('>');
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Return an informative string for the name of this type.
+     *
+     * @return an informative string for the name of this type
+     * @since 1.8
+     */
+    public String getTypeName() {
+        if (this.getClass().isArray()) {
+            try {
+                Class<?> cl = this.getClass();
+                int dimensions = 0;
+                while (cl.isArray()) {
+                    dimensions++;
+                    cl = cl.getComponentType();
+                }
+                StringBuilder sb = new StringBuilder();
+                sb.append(cl.getName());
+                for (int i = 0; i < dimensions; i++) {
+                    sb.append("[]");
+                }
+                return sb.toString();
+            } catch (Throwable e) {
+                /* FALLTHRU */ }
+        }
+        return getName();
+    }
+
+    public String getName() {
+        String name = this.getName();
+        if (name == null)
+            // this.name = name = getName();
+            return name;
+        return name;
     }
 
     private static List<Class> getGenericClass(Object obj, String genericName) throws IllegalAccessException {

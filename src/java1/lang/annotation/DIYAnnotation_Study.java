@@ -117,8 +117,8 @@ public class DIYAnnotation_Study {
         vo.setGuestEmail("email");
         list.add(vo);
         request2.setObj(list);
-        list = (List<AnnoVo>) ValidationUtils.stringCut(list);
-        System.out.println(gson.toJson(list));
+        request2 = (Request<List<AnnoVo>>) ValidationUtils.stringCut(request2);
+        System.out.println(gson.toJson(request2));
     }
 
     @Test
