@@ -13,4 +13,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Pattern {
     String value();
+
+    String scope() default "java.lang.String"; // 作用域
+
+    String paramLimit() default "必须满足格式："; // 参数限制
 }

@@ -2,6 +2,8 @@ package java1.lang.annotation;
 
 import java1.lang.annotation.validation.AssertFalse;
 import java1.lang.annotation.validation.Email;
+import java1.lang.annotation.validation.NotNull;
+import java1.lang.annotation.validation.Null;
 import java1.lang.annotation.validation.StringCut;
 import java1.lang.annotation.validation.ToUpper;
 
@@ -9,9 +11,11 @@ import java1.lang.annotation.validation.ToUpper;
 public class AnnoVo {
     @Email
     @StringCut(minLength = 7, completion = "zxiaofan")
+    @NotNull
     private String guestEmail;
 
     @ToUpper
+    @Null
     private String toUpper;
 
     @StringCut(maxLength = 5)

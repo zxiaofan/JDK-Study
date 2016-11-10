@@ -14,7 +14,7 @@ import org.junit.Test;
 
 import com.google.gson.Gson;
 
-import java1.lang.annotation.validation.ValidationUtils;
+import java1.lang.annotation.validation.ValidationUtil;
 
 /**
  * 自定义注解，参数验证
@@ -34,7 +34,7 @@ public class DIYAnnotation_Study {
             vo.setGuestEmail("hi@zxiaofan.com");
             vo.setToUpper(param);
             vo.setBoolFalse(false); // true将报错,java.lang.AssertionError: expected null, but was:<参数:[boolFalse]只能为false>
-            validate = ValidationUtils.validate(vo);
+            validate = ValidationUtil.validate(vo);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -49,7 +49,7 @@ public class DIYAnnotation_Study {
         String param = "123456";
         vo.setCutName(param);
         vo.setGuestEmail("email");
-        ValidationUtils.stringCut(vo);
+        ValidationUtil.dealParam(vo);
         assertEquals(vo.getCutName().length(), 5);
     }
 
@@ -65,26 +65,26 @@ public class DIYAnnotation_Study {
         AnnoVo vo2 = new AnnoVo();
         vo2.setCutName("234567");
         list.add(vo2);
-        list = (List<AnnoVo>) ValidationUtils.stringCut(list);
+        list = (List<AnnoVo>) ValidationUtil.dealParam(list);
         String listvo = gson.toJson(list);
         System.out.println(listvo);
         // Set
         Set<AnnoVo> set = new HashSet<>();
         set.add(vo);
         set.add(vo2);
-        set = (Set<AnnoVo>) ValidationUtils.stringCut(set);
+        set = (Set<AnnoVo>) ValidationUtil.dealParam(set);
         System.out.println(gson.toJson(set));
         Set<String> set2 = new HashSet<>();
         set2.add("set1");
         set2.add("set2");
-        set2 = (Set<String>) ValidationUtils.stringCut(set2);
+        set2 = (Set<String>) ValidationUtil.dealParam(set2);
         System.out.println(gson.toJson(set2));
 
         // Map
         Map<String, AnnoVo> map = new HashMap<>();
         map.put("k1", vo);
         map.put("k2", vo2);
-        map = (Map<String, AnnoVo>) ValidationUtils.stringCut(map);
+        map = (Map<String, AnnoVo>) ValidationUtil.dealParam(map);
         System.out.println(gson.toJson(map));
         // 复杂map
         Map<List<String>, List<AnnoVo>> map2 = new HashMap<>();
@@ -92,10 +92,12 @@ public class DIYAnnotation_Study {
         list1.add("111");
         List<AnnoVo> list2 = new ArrayList<>();
         vo.setCutName("123456");
+        vo.setGuestEmail("email");
         list2.add(vo);
         map2.put(list1, list2);
-        map2 = (Map<List<String>, List<AnnoVo>>) ValidationUtils.stringCut(map2);
+        map2 = (Map<List<String>, List<AnnoVo>>) ValidationUtil.dealParam(map2);
         System.out.println(gson.toJson(map2));
+        System.out.println(ValidationUtil.validate(map2));
     }
 
     @Test
@@ -106,9 +108,11 @@ public class DIYAnnotation_Study {
         // 泛型转换
         Request<AnnoVo> request = new Request<>();
         vo.setCutName(param);
+        vo.setGuestEmail("com");
         request.setObj(vo);
-        request = (Request<AnnoVo>) ValidationUtils.stringCut(request);
+        request = (Request<AnnoVo>) ValidationUtil.dealParam(request);
         System.out.println(gson.toJson(request));
+        System.out.println(ValidationUtil.validate(request));
 
         // 复杂泛型
         Request<List<AnnoVo>> request2 = new Request<>();
@@ -117,25 +121,36 @@ public class DIYAnnotation_Study {
         vo.setGuestEmail("email");
         list.add(vo);
         request2.setObj(list);
-        request2 = (Request<List<AnnoVo>>) ValidationUtils.stringCut(request2);
+        request2 = (Request<List<AnnoVo>>) ValidationUtil.dealParam(request2);
         System.out.println(gson.toJson(request2));
+        System.out.println(ValidationUtil.validate(request2));
     }
 
     @Test
     public void testFuzaList() throws Exception {
+        Request<AnnoListVo> request = initRequestVo();
+        request = (Request<AnnoListVo>) ValidationUtil.dealParam(request);
+        System.out.println(gson.toJson(request));
+    }
+
+    private Request<AnnoListVo> initRequestVo() {
         Request<AnnoListVo> request = new Request<>();
         AnnoListVo listAnno = new AnnoListVo();
         List<AnnoVo> listAnnovos = new ArrayList<>();
         AnnoVo vo = new AnnoVo();
         String param = "123456";
         vo.setCutName(param);
+        vo.setGuestEmail("email@哈哈.com.");
         listAnnovos.add(vo);
         listAnno.setListAnnovos(listAnnovos);
         request.setObj(listAnno);
-        request = (Request<AnnoListVo>) ValidationUtils.stringCut(request);
-        System.out.println(gson.toJson(request));
-        System.out.println(gson.toJson(listAnno) + ">>>");
-        listAnno = (AnnoListVo) ValidationUtils.stringCut(listAnno);
-        System.out.println(gson.toJson(listAnno));
+        return request;
+    }
+
+    @Test
+    public void testValidate() throws Exception {
+        Request<AnnoListVo> request = initRequestVo();
+        String result = ValidationUtil.validate(request);
+        System.out.println(result);
     }
 }

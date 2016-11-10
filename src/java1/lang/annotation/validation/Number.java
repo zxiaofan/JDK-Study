@@ -12,32 +12,17 @@ import java.lang.annotation.Target;
 @Target(value = {ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Number {
-    /**
-     * 添加方法注释.
-     * 
-     * @return
-     */
     double min() default Double.MIN_VALUE;
 
-    /**
-     * 添加方法注释.
-     * 
-     * @return
-     */
     double max() default Double.MAX_VALUE;
 
-    /**
-     * 添加方法注释.
-     * 
-     * @return
-     */
     long defaultValue() default 0;
 
-    /**
-     * 不在最大值最小值之间取这个值.
-     * 
-     * @return
-     */
+    // 不在最大值最小值之间取这个值.
     long overstep() default 0;
+
+    String scope() default "只能使用在byte/short/int/long/double/float等类型"; // 作用域
+
+    String paramLimit() default ""; // 参数限制
 
 }

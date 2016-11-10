@@ -12,5 +12,7 @@ import java.lang.annotation.Target;
 @Target(value = {ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface AssertTrue {
+    String scope() default "boolean或java.lang.Boolean"; // 作用域
 
+    String paramLimit() default "只能为true"; // 参数限制
 }

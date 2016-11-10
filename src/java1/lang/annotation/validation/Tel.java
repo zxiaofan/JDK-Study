@@ -12,5 +12,9 @@ import java.lang.annotation.Target;
 @Target(value = {ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Tel {
+    String scope() default "java.lang.String"; // 作用域
 
+    String regex = "^0\\d{2,3}-{0,1}\\d{5,9}$|0\\d{7,12}$";
+
+    String paramLimit() default "必须为座机，格式："; // 参数限制
 }

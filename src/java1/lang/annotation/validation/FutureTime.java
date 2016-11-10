@@ -12,5 +12,7 @@ import java.lang.annotation.Target;
 @Target(value = {ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface FutureTime {
+    String scope() default "java.util.Date"; // 作用域
 
+    String paramLimit() default "必须是未来某个时间"; // 参数限制
 }
