@@ -1,9 +1,9 @@
 package java1.lang.annotation;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -29,16 +29,16 @@ public class DIYAnnotation_Study {
     public void testDIYAnno() {
         AnnoVo vo = new AnnoVo();
         String param = "I am about to change Upper";
-        String validate = null;
+        AnnoVo validate = null;
         try {
             vo.setGuestEmail("hi@zxiaofan.com");
             vo.setToUpper(param);
             vo.setBoolFalse(false); // true将报错,java.lang.AssertionError: expected null, but was:<参数:[boolFalse]只能为false>
-            validate = ValidationUtil.validate(vo);
+            validate = (AnnoVo) ValidationUtil.dealParam(vo);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        assertNull(validate); // 为空则参数正确
+        // assertNull(validate); // 为空则参数正确
         assertEquals(param.toUpperCase(), vo.getToUpper());
     }
 
@@ -140,7 +140,8 @@ public class DIYAnnotation_Study {
         AnnoVo vo = new AnnoVo();
         String param = "123456";
         vo.setCutName(param);
-        vo.setGuestEmail("email@哈哈.com.");
+        // vo.setGuestEmail("email@哈哈.com");
+        vo.setDate(new Date());
         listAnnovos.add(vo);
         listAnno.setListAnnovos(listAnnovos);
         request.setObj(listAnno);

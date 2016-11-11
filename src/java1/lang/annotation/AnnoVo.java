@@ -1,9 +1,11 @@
 package java1.lang.annotation;
 
+import java.util.Date;
+
 import java1.lang.annotation.validation.AssertFalse;
 import java1.lang.annotation.validation.Email;
 import java1.lang.annotation.validation.NotNull;
-import java1.lang.annotation.validation.Null;
+import java1.lang.annotation.validation.PastTime;
 import java1.lang.annotation.validation.StringCut;
 import java1.lang.annotation.validation.ToUpper;
 
@@ -15,7 +17,6 @@ public class AnnoVo {
     private String guestEmail;
 
     @ToUpper
-    @Null
     private String toUpper;
 
     @StringCut(maxLength = 5)
@@ -23,6 +24,9 @@ public class AnnoVo {
 
     @AssertFalse
     private boolean boolFalse;
+
+    @PastTime
+    private Date date;
 
     /**
      * 设置guestEmail.
@@ -98,5 +102,13 @@ public class AnnoVo {
      */
     public void setCutName(String cutName) {
         this.cutName = cutName;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
     }
 }

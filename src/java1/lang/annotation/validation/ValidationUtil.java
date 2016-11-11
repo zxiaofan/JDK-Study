@@ -6,6 +6,8 @@ import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -81,7 +83,21 @@ public final class ValidationUtil {
         localTime.set(System.currentTimeMillis());
         localList.set(new ArrayList<>());
         splitObject(obj);
-        return localList.get().isEmpty() ? null : packaging(localList.get());
+        String result = localList.get().isEmpty() ? null : packaging(localList.get());
+        clearLocal();
+        return result;
+
+    }
+
+    /**
+     * 清理local实例.
+     * 
+     */
+    private static void clearLocal() {
+        localValidate.remove();
+        localList.remove();
+        localTime.remove();
+        localGson.remove();
     }
 
     /**
@@ -94,7 +110,9 @@ public final class ValidationUtil {
      *             e
      */
     public static Object dealParam(Object obj) throws Exception {
-        return splitObject(obj);
+        Object result = splitObject(obj);
+        clearLocal();
+        return result;
     }
 
     /**
@@ -421,7 +439,7 @@ public final class ValidationUtil {
     }
 
     /**
-     * 是否是基本类型或其包装类或String.
+     * 是否是基本类型或其包装类或String/Date/Timestamp/BigDecimal.
      * 
      * @param cla
      *            Class
@@ -437,6 +455,9 @@ public final class ValidationUtil {
         }
         if (Integer.class.getName().equals(claName) || Double.class.getName().equals(claName) || Float.class.getName().equals(claName) || Long.class.getName().equals(claName)
                 || Short.class.getName().equals(claName) || Byte.class.getName().equals(claName) || Boolean.class.getName().equals(claName) || Character.class.getName().equals(claName)) {
+            return true;
+        }
+        if (Date.class.getName().equals(claName) || Timestamp.class.getName().equals(claName) || BigDecimal.class.getName().equals(claName)) {
             return true;
         }
         return false;
@@ -697,7 +718,7 @@ public final class ValidationUtil {
         initScopeParamLimit(paramVo, anIns.scope(), anIns.paramLimit());
         paramVo.setRemark(Tel.regex);
         if (String.class.equals(paramVo.getClaType())) {
-            checkParam(paramVo, !paramVo.getValue().toString().matches(Tel.regex));
+            checkParam(paramVo, !String.valueOf(paramVo.getValue()).matches(Tel.regex));
         } else {
             buildException(paramVo, an);
         }
@@ -717,7 +738,7 @@ public final class ValidationUtil {
         Postcode anIns = (Postcode) an;
         initScopeParamLimit(paramVo, anIns.scope(), anIns.paramLimit());
         if (String.class.equals(paramVo.getClaType())) {
-            checkParam(paramVo, !paramVo.getValue().toString().matches(Postcode.regex));
+            checkParam(paramVo, !String.valueOf(paramVo.getValue()).matches(Postcode.regex));
         } else {
             buildException(paramVo, an);
         }
@@ -738,7 +759,7 @@ public final class ValidationUtil {
         initScopeParamLimit(paramVo, anIns.scope(), anIns.paramLimit());
         paramVo.setRemark(Phone.regex);
         if (String.class.equals(paramVo.getClaType())) {
-            checkParam(paramVo, !paramVo.getValue().toString().matches(Phone.regex));
+            checkParam(paramVo, !String.valueOf(paramVo.getValue()).matches(Phone.regex));
         } else {
             buildException(paramVo, an);
         }
@@ -758,7 +779,7 @@ public final class ValidationUtil {
         Pattern anIns = (Pattern) an;
         initScopeParamLimit(paramVo, anIns.scope(), anIns.paramLimit());
         if (String.class.equals(paramVo.getClaType())) {
-            checkParam(paramVo, !paramVo.getValue().toString().matches(anIns.value()));
+            checkParam(paramVo, !String.valueOf(paramVo.getValue()).matches(anIns.value()));
         } else {
             buildException(paramVo, an);
         }
@@ -778,8 +799,16 @@ public final class ValidationUtil {
         StringLength anIns = (StringLength) an;
         initScopeParamLimit(paramVo, anIns.scope(), anIns.paramLimit());
         paramVo.setRemark("[" + anIns.min() + "," + anIns.max() + "]");
-        if (String.class.equals(paramVo.getClaType())) {
-            checkParam(paramVo, paramVo.getValue().toString().length() < anIns.min() || paramVo.getValue().toString().length() > anIns.max());
+        if (String.class.equals(paramVo.getClaType())) { // null.length()//Exception
+            if (paramVo.isNotNull()) {
+                if (null == paramVo.getValue() || String.valueOf(paramVo.getValue()).length() < anIns.min() || String.valueOf(paramVo.getValue()).length() > anIns.max()) {
+                    logToList(paramVo);
+                }
+            } else {
+                if (null != paramVo.getValue() && (String.valueOf(paramVo.getValue()).length() < anIns.min() || String.valueOf(paramVo.getValue()).length() > anIns.max())) {
+                    logToList(paramVo);
+                }
+            }
         } else {
             buildException(paramVo, an);
         }
@@ -879,7 +908,11 @@ public final class ValidationUtil {
         initScopeParamLimit(paramVo, anIns.scope(), anIns.paramLimit());
         paramVo.setRemark(Email.regex);
         if (String.class.equals(paramVo.getClaType())) {
-            checkParam(paramVo, !paramVo.getValue().toString().matches(Email.regex));
+            if (paramVo.isNotNull() && null == paramVo.getValue()) {
+                logToList(paramVo);
+            } else { // null.matches()返回false
+                checkParam(paramVo, !String.valueOf(paramVo.getValue()).matches(Email.regex));
+            }
         } else {
             buildException(paramVo, an);
         }
@@ -899,7 +932,7 @@ public final class ValidationUtil {
         AssertTrue anIns = (AssertTrue) an;
         initScopeParamLimit(paramVo, anIns.scope(), anIns.paramLimit());
         if (boolean.class.equals(paramVo.getClaType()) || Boolean.class.equals(paramVo.getClaType())) {
-            checkParam(paramVo, !Boolean.parseBoolean(paramVo.getValue().toString()));
+            checkParam(paramVo, !Boolean.parseBoolean(String.valueOf(paramVo.getValue())));
         } else { // boolean/Boolean
             buildException(paramVo, an);
         }
@@ -919,7 +952,7 @@ public final class ValidationUtil {
         AssertFalse anIns = (AssertFalse) an;
         initScopeParamLimit(paramVo, anIns.scope(), anIns.paramLimit());
         if (boolean.class.equals(paramVo.getClaType()) || Boolean.class.equals(paramVo.getClaType())) {
-            checkParam(paramVo, Boolean.parseBoolean(paramVo.getValue().toString()));
+            checkParam(paramVo, Boolean.parseBoolean(String.valueOf(paramVo.getValue())));
         } else {
             buildException(paramVo, an);
         }
