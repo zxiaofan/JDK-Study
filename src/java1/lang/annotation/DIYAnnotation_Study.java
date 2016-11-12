@@ -138,9 +138,10 @@ public class DIYAnnotation_Study {
         AnnoListVo listAnno = new AnnoListVo();
         List<AnnoVo> listAnnovos = new ArrayList<>();
         AnnoVo vo = new AnnoVo();
-        String param = "123456";
+        String param = "02883336666";
         vo.setCutName(param);
-        // vo.setGuestEmail("email@哈哈.com");
+        vo.setGuestEmail("email@哈哈.com");
+        // vo.setNum(22);
         vo.setDate(new Date());
         listAnnovos.add(vo);
         listAnno.setListAnnovos(listAnnovos);

@@ -565,7 +565,7 @@ public final class ValidationUtil {
             } else if (an.annotationType().getName().equals(Phone.class.getName())) {
                 validatePhone(paramVo, an);
             } else if (an.annotationType().getName().equals(Postcode.class.getName())) {
-                validatePastalCode(paramVo, an);
+                validatePostCode(paramVo, an);
             } else if (an.annotationType().getName().equals(Tel.class.getName())) {
                 validateTel(paramVo, an);
             } else if (an.annotationType().getName().equals(NotNullAndEmpty.class.getName())) {
@@ -641,7 +641,7 @@ public final class ValidationUtil {
             if (null == paramVo.getValue()) {
                 paramVo.getField().set(paramVo.getObj(), number.defaultValue());
             } else {
-                double d = (double) paramVo.getValue();
+                double d = Double.valueOf(String.valueOf(paramVo.getValue()));
                 if (d > number.max() || d < number.min()) {
                     paramVo.getField().set(paramVo.getObj(), number.overstep());
                 }
@@ -650,7 +650,7 @@ public final class ValidationUtil {
             if (null == paramVo.getValue()) {
                 paramVo.getField().set(paramVo.getObj(), number.defaultValue());
             } else {
-                double d = (double) paramVo.getValue();
+                double d = Double.valueOf(String.valueOf(paramVo.getValue()));
                 if (d > number.max() || d < number.min()) {
                     paramVo.getField().set(paramVo.getObj(), number.overstep());
                 }
@@ -734,7 +734,7 @@ public final class ValidationUtil {
      * @throws Exception
      *             e
      */
-    private static void validatePastalCode(ParamVo paramVo, Annotation an) throws Exception {
+    private static void validatePostCode(ParamVo paramVo, Annotation an) throws Exception {
         Postcode anIns = (Postcode) an;
         initScopeParamLimit(paramVo, anIns.scope(), anIns.paramLimit());
         if (String.class.equals(paramVo.getClaType())) {
@@ -778,6 +778,7 @@ public final class ValidationUtil {
     private static void validatePattern(ParamVo paramVo, Annotation an) throws Exception {
         Pattern anIns = (Pattern) an;
         initScopeParamLimit(paramVo, anIns.scope(), anIns.paramLimit());
+        paramVo.setRemark(anIns.value());
         if (String.class.equals(paramVo.getClaType())) {
             checkParam(paramVo, !String.valueOf(paramVo.getValue()).matches(anIns.value()));
         } else {
@@ -908,11 +909,7 @@ public final class ValidationUtil {
         initScopeParamLimit(paramVo, anIns.scope(), anIns.paramLimit());
         paramVo.setRemark(Email.regex);
         if (String.class.equals(paramVo.getClaType())) {
-            if (paramVo.isNotNull() && null == paramVo.getValue()) {
-                logToList(paramVo);
-            } else { // null.matches()返回false
-                checkParam(paramVo, !String.valueOf(paramVo.getValue()).matches(Email.regex));
-            }
+            checkParam(paramVo, !String.valueOf(paramVo.getValue()).matches(Email.regex));
         } else {
             buildException(paramVo, an);
         }

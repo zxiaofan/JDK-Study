@@ -7,6 +7,7 @@ import java1.lang.annotation.validation.Email;
 import java1.lang.annotation.validation.NotNull;
 import java1.lang.annotation.validation.PastTime;
 import java1.lang.annotation.validation.StringCut;
+import java1.lang.annotation.validation.Tel;
 import java1.lang.annotation.validation.ToUpper;
 
 @StringCut
@@ -20,6 +21,7 @@ public class AnnoVo {
     private String toUpper;
 
     @StringCut(maxLength = 5)
+    @Tel
     private String cutName;
 
     @AssertFalse
@@ -27,6 +29,8 @@ public class AnnoVo {
 
     @PastTime
     private Date date;
+
+    private Integer num;
 
     /**
      * 设置guestEmail.
@@ -110,5 +114,13 @@ public class AnnoVo {
 
     public void setDate(Date date) {
         this.date = date;
+    }
+
+    public Integer getNum() {
+        return num;
+    }
+
+    public void setNum(Integer num) {
+        this.num = num;
     }
 }
