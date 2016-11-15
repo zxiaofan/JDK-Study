@@ -16,10 +16,10 @@ public @interface Number {
 
     double max() default Double.MAX_VALUE;
 
-    long defaultValue() default 0;
+    String defaultValue() default "0";
 
     // 不在最大值最小值之间取这个值.
-    long overstep() default 0;
+    String overstep() default "0";
 
     String scope() default "只能使用在byte/short/int/long/double/float等类型"; // 作用域
 

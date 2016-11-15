@@ -141,7 +141,7 @@ public class DIYAnnotation_Study {
         String param = "02883336666";
         vo.setCutName(param);
         vo.setGuestEmail("email@哈哈.com");
-        // vo.setNum(22);
+        vo.setNum(22);
         vo.setDate(new Date());
         listAnnovos.add(vo);
         listAnno.setListAnnovos(listAnnovos);
@@ -152,7 +152,8 @@ public class DIYAnnotation_Study {
     @Test
     public void testValidate() throws Exception {
         Request<AnnoListVo> request = initRequestVo();
-        String result = ValidationUtil.validate(request);
-        System.out.println(result);
+        // String result = ValidationUtil.validate(request);
+        request = (Request<AnnoListVo>) ValidationUtil.dealParam(request);
+        System.out.println(gson.toJson(request));
     }
 }

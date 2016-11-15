@@ -5,6 +5,7 @@ import java.util.Date;
 import java1.lang.annotation.validation.AssertFalse;
 import java1.lang.annotation.validation.Email;
 import java1.lang.annotation.validation.NotNull;
+import java1.lang.annotation.validation.Number;
 import java1.lang.annotation.validation.PastTime;
 import java1.lang.annotation.validation.StringCut;
 import java1.lang.annotation.validation.Tel;
@@ -30,6 +31,7 @@ public class AnnoVo {
     @PastTime
     private Date date;
 
+    @Number(max = 5, overstep = "2", defaultValue = "3")
     private Integer num;
 
     /**

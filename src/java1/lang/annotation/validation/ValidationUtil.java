@@ -427,13 +427,16 @@ public final class ValidationUtil {
      */
     private static void realDeal(Object obj, Field field) throws Exception {
         Annotation[] annotations = field.getAnnotations();
+        ParamVo paramVo = initDealParam(obj, field);
         for (Annotation an : annotations) {
             if (an.annotationType().getName().equals(StringCut.class.getName())) {
-                dealStringCut(obj, field, an);
+                dealStringCut(paramVo, an);
             } else if (an.annotationType().getName().equals(ToLower.class.getName())) {
-                dealToLower(obj, field, an);
+                dealToLower(paramVo, an);
             } else if (an.annotationType().getName().equals(ToUpper.class.getName())) {
-                dealToUpper(obj, field, an);
+                dealToUpper(paramVo, an);
+            } else if (an.annotationType().getName().equals(Number.class.getName())) {
+                dealNumber(paramVo, an);
             }
         }
     }
@@ -475,8 +478,10 @@ public final class ValidationUtil {
      * @throws Exception
      *
      */
-    private static void dealStringCut(Object obj, Field field, Annotation an) throws Exception {
+    private static void dealStringCut(ParamVo paramVo, Annotation an) throws Exception {
         StringCut stringCut = (StringCut) an;
+        Field field = paramVo.getField();
+        Object obj = paramVo.getObj();
         Class type = field.getType();
         Object value = field.get(obj);
         if (String.class.equals(type)) {
@@ -570,8 +575,6 @@ public final class ValidationUtil {
                 validateTel(paramVo, an);
             } else if (an.annotationType().getName().equals(NotNullAndEmpty.class.getName())) {
                 validateNotNullAndEmpty(paramVo, an);
-            } else if (an.annotationType().getName().equals(Number.class.getName())) {
-                dealNumber(paramVo, an);
             }
             paramVo.setScope(null);
             paramVo.setParamLimit(null);
@@ -583,16 +586,16 @@ public final class ValidationUtil {
     /**
      * 转大写.
      * 
-     * @param obj
-     *            对象
-     * @param field
-     *            属性
+     * @param paramVo
+     *            paramVo
      * @param an
      *            注解
      * @throws Exception
      *             e
      */
-    private static void dealToUpper(Object obj, Field field, Annotation an) throws Exception {
+    private static void dealToUpper(ParamVo paramVo, Annotation an) throws Exception {
+        Field field = paramVo.getField();
+        Object obj = paramVo.getObj();
         Class type = field.getType();
         Object value = field.get(obj);
         if (String.class.equals(type)) {
@@ -605,16 +608,16 @@ public final class ValidationUtil {
     /**
      * 转小写.
      * 
-     * @param obj
-     *            对象
-     * @param field
-     *            属性
+     * @param paramVo
+     *            paramVo
      * @param an
      *            注解
      * @throws Exception
      *             e
      */
-    private static void dealToLower(Object obj, Field field, Annotation an) throws Exception {
+    private static void dealToLower(ParamVo paramVo, Annotation an) throws Exception {
+        Field field = paramVo.getField();
+        Object obj = paramVo.getObj();
         Object value = field.get(obj);
         Class type = field.getType();
         if (String.class.equals(type)) {
@@ -627,8 +630,8 @@ public final class ValidationUtil {
     /**
      * 处理数字.
      * 
-     * @param obj
-     *            对象
+     * @param paramVo
+     *            paramVo
      * @param an
      *            注解
      * @throws Exception
@@ -636,23 +639,65 @@ public final class ValidationUtil {
      */
     private static void dealNumber(ParamVo paramVo, Annotation an) throws Exception {
         Number number = (Number) an;
-        if (byte.class.equals(paramVo.getClaType()) || Byte.class.equals(paramVo.getClaType()) || short.class.equals(paramVo.getClaType()) || Short.class.equals(paramVo.getClaType())
-                || int.class.equals(paramVo.getClaType()) || Integer.class.equals(paramVo.getClaType()) || long.class.equals(paramVo.getClaType()) || Long.class.equals(paramVo.getClaType())) {
-            if (null == paramVo.getValue()) {
-                paramVo.getField().set(paramVo.getObj(), number.defaultValue());
-            } else {
-                double d = Double.valueOf(String.valueOf(paramVo.getValue()));
-                if (d > number.max() || d < number.min()) {
-                    paramVo.getField().set(paramVo.getObj(), number.overstep());
-                }
+        Object over = null;
+        Object dv = null;
+        boolean isNumber = false;
+        if (byte.class.equals(paramVo.getClaType()) || Byte.class.equals(paramVo.getClaType())) {
+            isNumber = true;
+            if (null != number.defaultValue()) {
+                dv = Byte.valueOf(String.valueOf(number.defaultValue()));
             }
-        } else if (float.class.equals(paramVo.getClaType()) || Float.class.equals(paramVo.getClaType()) || double.class.equals(paramVo.getClaType()) || Double.class.equals(paramVo.getClaType())) {
+            if (null != number.overstep()) {
+                over = Byte.valueOf(String.valueOf(number.overstep()));
+            }
+        } else if (short.class.equals(paramVo.getClaType()) || Short.class.equals(paramVo.getClaType())) {
+            isNumber = true;
+            if (null != number.defaultValue()) {
+                dv = Short.valueOf(String.valueOf(number.defaultValue()));
+            }
+            if (null != number.overstep()) {
+                over = Short.valueOf(String.valueOf(number.overstep()));
+            }
+        } else if (int.class.equals(paramVo.getClaType()) || Integer.class.equals(paramVo.getClaType())) {
+            isNumber = true;
+            if (null != number.defaultValue()) {
+                dv = Integer.valueOf(String.valueOf(number.defaultValue()));
+            }
+            if (null != number.overstep()) {
+                over = Integer.valueOf(String.valueOf(number.overstep()));
+            }
+        } else if (long.class.equals(paramVo.getClaType()) || Long.class.equals(paramVo.getClaType())) {
+            isNumber = true;
+            if (null != number.defaultValue()) {
+                dv = Long.valueOf(String.valueOf(number.defaultValue()));
+            }
+            if (null != number.overstep()) {
+                over = Long.valueOf(String.valueOf(number.overstep()));
+            }
+        } else if (float.class.equals(paramVo.getClaType()) || Float.class.equals(paramVo.getClaType())) {
+            isNumber = true;
+            if (null != number.defaultValue()) {
+                dv = Float.valueOf(String.valueOf(number.defaultValue()));
+            }
+            if (null != number.overstep()) {
+                over = Float.valueOf(String.valueOf(number.overstep()));
+            }
+        } else if (double.class.equals(paramVo.getClaType()) || Double.class.equals(paramVo.getClaType())) {
+            isNumber = true;
+            if (null != number.defaultValue()) {
+                dv = Double.valueOf(String.valueOf(number.defaultValue()));
+            }
+            if (null != number.overstep()) {
+                over = Double.valueOf(String.valueOf(number.overstep()));
+            }
+        }
+        if (isNumber) {
             if (null == paramVo.getValue()) {
-                paramVo.getField().set(paramVo.getObj(), number.defaultValue());
+                paramVo.getField().set(paramVo.getObj(), dv);
             } else {
                 double d = Double.valueOf(String.valueOf(paramVo.getValue()));
                 if (d > number.max() || d < number.min()) {
-                    paramVo.getField().set(paramVo.getObj(), number.overstep());
+                    paramVo.getField().set(paramVo.getObj(), over);
                 }
             }
         } else {
