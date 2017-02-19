@@ -107,7 +107,7 @@ public class Predicate_Study {
     };
 
     public List myFilter(List<Student> listStu, Predicate pre) {
-        return listStu.stream().filter(pre).collect(Collectors.toList());
+        return (List) listStu.stream().filter(pre).collect(Collectors.toList());
     }
 
     class Student {
