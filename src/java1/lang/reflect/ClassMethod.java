@@ -9,6 +9,10 @@
 package java1.lang.reflect;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+
+import junit.framework.TestCase;
 
 /**
  * Class方法的反射。
@@ -17,8 +21,12 @@ import java.lang.reflect.Method;
  * 
  * @author xiaofan
  */
-public class ClassMethod {
-    public static void main(String[] args) {
+public class ClassMethod extends TestCase {
+    /**
+     * 使用Method.invoke调用方法.
+     * 
+     */
+    public void testInvokemethod() {
         A a = new A();
         Class c = a.getClass(); // 获取类的方法《--类信息《--类类型
         // 方法：由名称和参数列表决定
@@ -41,6 +49,40 @@ public class ClassMethod {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 反射与泛型.
+     * 
+     * 通过反射插入集合的非相同类型的数据，只能直接处理Object或对Object强转到实际类型。
+     */
+    @SuppressWarnings("rawtypes")
+    public void testGeneric() {
+        List list0 = new ArrayList<>();
+        List<String> list = new ArrayList<>();
+        list.add("hi");
+        // list.add(123); // 编译报错
+        Class c0 = list0.getClass();
+        Class c = list.getClass();
+        assertEquals(c0, c); // true
+        // c0==c1说明：编译之后集合的泛型是去泛型化的；java中的泛型是防止错误输入的，只在编译阶段有效，编译后无效
+        // 通过方法的反射绕过编译
+        Method method;
+        try {
+            method = c.getMethod("add", Object.class);
+            method.invoke(list, 456); // 绕过编译操作就绕过了泛型
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        for (Object obj : list) { // 这样遍历是可以的
+            System.out.println(obj);
+        }
+        System.out.println("======");
+        for (String str : list) {
+            System.out.println(str); // 不能这样遍历,Iterator迭代也不行
+            // str为int时抛异常：java.lang.ClassCastException: java.lang.Integer cannot be cast to java.lang.String
+        }
+
     }
 }
 
