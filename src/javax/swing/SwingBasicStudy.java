@@ -76,7 +76,7 @@ public class SwingBasicStudy extends TestCase {
         JTextArea textArea = new JTextArea(3, 8);
         // 定义9列的单行文本域
         JTextField textFieldName = new JTextField(9);
-        JMenuBar mBar = new JMenuBar();
+        JMenuBar menuBar = new JMenuBar();
         JMenu menuFile = new JMenu("File");
         JMenu menuEdit = new JMenu("Edit");
         // 创建新建菜单选项，并制定图标
@@ -131,6 +131,31 @@ public class SwingBasicStudy extends TestCase {
         // 组合菜单，并为菜单添加监听器
         // 为newItem设置快捷键，设置快捷键时需使用大写字母
         menuItemNew.setAccelerator(KeyStroke.getKeyStroke('N', InputEvent.CTRL_MASK));
+        menuItemNew.addActionListener(e -> textArea.append("用户单击了“新建”菜单\n"));
+        // 为menuFile添加菜单项
+        menuFile.add(menuItemNew);
+        menuFile.add(menuItemSave);
+        menuFile.add(menuItemExit);
+        // 为menuEdit添加菜单项
+        menuEdit.add(autoWrap);
+        // 添加分隔线
+        menuEdit.addSeparator();
+        menuEdit.add(menuItemCopy);
+        menuEdit.add(menuItemPaste);
+        // 为menuItemComment添加提示信息
+        menuItemComment.setToolTipText("注释代码");
+        // 为menuFormat添加菜单项
+        menuFormat.add(menuItemComment);
+        menuFormat.add(menuItemCommentCancel);
+        // 使用添加new JMenuItem("-")的方式不能添加菜单分隔符
+        menuEdit.add(new JMenuItem("-"));
+        // 将menuFormat菜单组合到menuEdit菜单中，从而形成二级菜单
+        menuEdit.add(menuFormat);
+        // 将menuFile、menuEdit菜单添加到menuBar菜单条
+        menuBar.add(menuFile);
+        menuBar.add(menuEdit);
+        // 为jFrame设置菜单条
+        jFrame.add(menuBar);
 
     }
 }
