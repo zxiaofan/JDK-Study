@@ -19,11 +19,15 @@ import org.junit.Test;
 /**
  * Timer.
  * 
+ * Timer简单易用， 所有任务都由同一个线程调度，因此所有任务都是串行执行，同一时间只能有一个任务在执行，前一个任务的延迟或异常都将会影响到之后的任务。
+ * 
  * TimerTask抛出的了未检查异常则会导致Timer线程终止，同时Timer也不会重新恢复线程的执行
  * 
- * <1>schedule()：间隔时间固定，上次任务执行完毕后，延迟delay再执行下一次任务
+ * 1、schedule()：fixed-delay间隔时间固定（上次任务执行完毕后，若executeTime>=period，立即执行下一次任务；若executeTime<period，延迟delay再执行下一次任务）
  * 
- * <2>scheduleAtFixedRate()：执行频率固定，不管上次任务执行完毕与否，都在指定间隔后执行本次任务
+ * 2、scheduleAtFixedRate()：fixed-rate执行频率固定（任务队列中每个任务待执行的时间从一开始就确定，理论上任务执行间隔period）（任务实际执行时间趋向于计划时间）；
+ * 
+ * （实际执行时，若（个别任务executeTime>period导致）下一任务的actualTime>=expectTime，则下一任务立即执行，任务队列中的任务将依次延后执行，当后续任务的executeTime<period时，任务的实际执行时间会逐渐趋向于一开始就确定的待执行时间。）
  * 
  * @author zxiaofan
  */
@@ -61,7 +65,8 @@ public class TimerStudy {
     public void testDefault() {
         printNow();
         TimerTask task = new TaskRunnable("延迟指定时间执行任务...");
-        timerDefault.schedule(task, delay); // schedule(TimerTask task, long delay)：以当前时间为准，延迟delay毫秒后执行Task
+        // TimerTask task = new TaskRunnable("null");
+        timerDefault.schedule(task, delay); // schedule(TimerTask task, long delay)：以当前时间为准，延迟delay毫秒后执行Task（仅执行一次）
         Date firstTime = null;
         try {
             firstTime = format.parse("2015-11-12 00:11:22.3");
@@ -70,16 +75,16 @@ public class TimerStudy {
         }
         sleep(1000);
         // TimerTask不能重用
-        task = new TaskRunnable("指定时间执行任务...");
-        timerDefault.schedule(task, firstTime); // schedule(TimerTask task, Date time)：在指定时间执行任务，如果时间已过期立即执行任务
+        TimerTask task2 = new TaskRunnable("指定时间执行任务...");
+        timerDefault.schedule(task2, firstTime); // schedule(TimerTask task, Date time)：在指定时间执行任务，如果时间已过期立即执行任务（仅执行一次）
         sleep(1000);
         //
-        task = new TaskRunnable("延迟delay，间隔period执行任务...");
-        timerDefault.schedule(task, delay, 2 * period);
+        TimerTask task3 = new TaskRunnable("延迟delay，间隔period执行任务...");
+        timerDefault.schedule(task3, delay, 2 * period);
         sleep(1000);
         //
-        task = new TaskRunnable("...从指定时间开始，间隔period执行任务...");
-        timerDefault.schedule(task, firstTime, 4 * period); // 若时间已过期立即执行任务
+        TimerTask task4 = new TaskRunnable("...从指定时间开始，间隔period执行任务...");
+        timerDefault.schedule(task4, firstTime, 4 * period); // 若时间已过期立即执行任务
         sleep(100000);
     }
 
@@ -91,8 +96,8 @@ public class TimerStudy {
     @Test
     public void testScheduleAtFixedRate() {
         printNow();
-        TimerTask task = new TaskRunnable("延迟delay，间隔period执行任务...scheduleAtFixedRate频率固定...", 8 * executeTime);
-        timerDefault.scheduleAtFixedRate(task, 2 * delay, 2 * period); // executeTime>period，实际间隔时间为executeTime？why不是period，费解
+        TimerTask task = new TaskRunnable("延迟delay，间隔period执行任务...scheduleAtFixedRate频率固定...", 4 * executeTime, 5);
+        timerDefault.scheduleAtFixedRate(task, 2 * delay, 2 * period); // executeTime>period，设置executeTime最大执行次数后，即可发现scheduleAtFixedRate执行的奥秘
         // Date firstTime = null;
         // try {
         // firstTime = format.parse("2015-11-12 00:11:22.3");
@@ -100,8 +105,8 @@ public class TimerStudy {
         // e.printStackTrace();
         // }
         // timerDefault.scheduleAtFixedRate(task, firstTime, 3000L); // 指定firstTime时间后，每次间隔period开始执行任务（firstTime过期则立即执行）
-        // TimerTask task2 = new TaskRunnable("延迟delay，间隔period执行任务...schedule间隔固定...", 4 * executeTime);
-        // timerDefault.schedule(task2, 2 * delay, 2 * period); // executeTime>period，则时间间隔为executeTime？费解
+        TimerTask task2 = new TaskRunnable("延迟delay，间隔period执行任务...schedule间隔固定...", 4 * executeTime, 5);
+        // timerDefault.schedule(task2, 2 * delay, 3 * period);
         sleep(100000);
     }
 
