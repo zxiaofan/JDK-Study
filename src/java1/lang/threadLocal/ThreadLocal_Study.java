@@ -21,6 +21,10 @@ import org.junit.Test;
  * @author zxiaofan
  */
 public class ThreadLocal_Study {
+
+    /**
+     * ThreadLocal.
+     */
     static ThreadLocal<String> threadLocal = null;
 
     @Test
@@ -62,7 +66,7 @@ public class ThreadLocal_Study {
      * 初始化threadLocal(写这么麻烦主要是方便调试源代码).
      * 
      */
-    private void initThreadLocal() {
+    private synchronized void initThreadLocal() {
         if (null == threadLocal) {
             threadLocal = new ThreadLocal<String>() {
                 protected String initialValue() {
