@@ -45,17 +45,17 @@ public class TimerStudy {
     /**
      * 延迟.
      */
-    private long delay = 1000L;
+    private static long delay = 1000L;
 
     /**
      * 间隔.
      */
-    private long period = 1000L;
+    private static long period = 1000L;
 
     /**
      * 执行时间单位间隔.
      */
-    private long executeTime = 1000L;
+    private static long executeTime = 1000L;
 
     /**
      * timerDefault.
@@ -111,12 +111,32 @@ public class TimerStudy {
     }
 
     /**
+     * Timer守护线程.
+     * 
+     * Java 线程分为两类：用户线程（User Thread）和守护线程（Daemon Thread）
+     * 
+     * 守护线程的作用是为其他线程提供服务，譬如垃圾回收器（GC），只要当前 JVM 实例中还有非守护线程运行，则守护线程就会一直工作下去，直至所有非守护线程结束，守护线程随 JVM 一起结束。
+     * 
+     * @param args
+     *            args
+     */
+    public static void main(String[] args) {
+        boolean isDaemon = false; // 如果Timer设置为守护线程true，用户线程执行完毕后，timerDaemon的任务也会随之结束；反之若Timer非守护，则其会一直运行
+        Timer timerDaemon = new Timer("TimerName", isDaemon);
+        timerDaemon.schedule(new TaskRunnable("task", 3 * executeTime), delay, 2 * period);
+        for (int i = 0; i < 10; i++) {
+            sleep(executeTime); // 用户线程（运行10S即结束）
+        }
+        System.out.println("用户线程执行完毕");
+    }
+
+    /**
      * sleep，确保任务已执行.
      * 
      * @param sleep
      *            sleep
      */
-    private void sleep(long sleep) {
+    private static void sleep(long sleep) {
         try {
             Thread.sleep(sleep);
         } catch (InterruptedException e) {
