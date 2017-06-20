@@ -91,10 +91,12 @@ public class TryWithResources {
     private void close(AutoCloseable... closeables) {
         if (null != closeables && closeables.length > 0) {
             for (AutoCloseable autoCloseable : closeables) {
-                try {
-                    autoCloseable.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
+                if (null != autoCloseable) {
+                    try {
+                        autoCloseable.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
