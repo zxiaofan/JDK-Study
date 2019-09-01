@@ -10,3 +10,12 @@
 相关博文：http://blog.csdn.net/u010887744/article/category/5792101  
 JDK源码分析：http://blog.csdn.net/u010887744/article/category/6126950  
 By [zxiaofan.com](http://zxiaofan.com "zxiaofan")
+
+
+    
+---
+>祝君好运！<br>
+Life is all about choices！<br>
+将来的你一定会感激现在拼命的自己！<br>
+【[CSDN](https://blog.csdn.net/u010887744)】【[GitHub](https://github.com/zxiaofan)】【[OSCHINA](https://my.oschina.net/zxiaofan)】【[微信公众号](http://tc.zxiaofan.com/tc/zxiaofan_dyh.jpg)】    
+<img src="http://tc.zxiaofan.com/tc/zxiaofan_dyh.jpg"  height="150" width="150" alt="欢迎订阅zxiaofan的微信公众号，扫码或直接搜索zxiaofan">
